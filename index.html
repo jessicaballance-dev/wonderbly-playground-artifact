@@ -1119,7 +1119,7 @@ const manifestData=[
 
 const MF_SPREADS=[{id:'cover',label:'Full cover'},...Array.from({length:14},(_,i)=>({id:`spr-${i+1}`,label:`pp. ${i*2+1}–${i*2+2}`}))];
 const MF_PAGES=[{id:'cover',label:'Full cover',spread:'cover'},...Array.from({length:28},(_,i)=>({id:`mp${i+1}`,label:`p. ${i+1}`,spread:`spr-${Math.floor(i/2)+1}`}))];
-let mfMode='spreads', mfSelected=new Set(), mfDropOpen=false, mfType='all', mfStatus='all', mfSort='default', mfSortDropOpen=false;
+let mfMode='pages', mfSelected=new Set(), mfDropOpen=false, mfType='all', mfStatus='all', mfSort='default', mfSortDropOpen=false;
 
 function getFilteredManifest(){
   let items=manifestData.filter(img=>{
@@ -1209,8 +1209,8 @@ function buildUploadPanel(){
         <svg class="ic" width="9" height="9"><use href="#ic-chev-r"/></svg>
         <div class="mf-panel" id="mf-panel">
           <div class="mf-mode">
-            <button class="mf-mb" id="mf-mb-spreads" onclick="setMfMode(event,'spreads')">Spreads</button>
             <button class="mf-mb" id="mf-mb-pages" onclick="setMfMode(event,'pages')">Pages</button>
+            <button class="mf-mb" id="mf-mb-spreads" onclick="setMfMode(event,'spreads')">Spreads</button>
           </div>
           <div class="mf-rows">
             <div class="mf-row" id="mf-row-all" onclick="toggleMfAll(event)">
@@ -1218,10 +1218,6 @@ function buildUploadPanel(){
             </div>
             <div class="mf-sep"></div>
             <div id="mf-item-rows"></div>
-          </div>
-          <div class="mf-ft">
-            <span onclick="clearMf(event)" style="font-size:10px;color:var(--tx3);cursor:pointer;">Clear</span>
-            <span id="mf-ft-count" style="font-size:10px;color:var(--tx3);"></span>
           </div>
         </div>
       </div>
