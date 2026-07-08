@@ -1119,15 +1119,18 @@ const manifestData=[
 
 const MF_SPREADS=[{id:'cover',label:'Full cover'},...Array.from({length:14},(_,i)=>({id:`spr-${i+1}`,label:`pp. ${i*2+1}–${i*2+2}`}))];
 const MF_PAGES=[{id:'cover',label:'Full cover',spread:'cover'},...Array.from({length:28},(_,i)=>({id:`mp${i+1}`,label:`p. ${i+1}`,spread:`spr-${Math.floor(i/2)+1}`}))];
-let mfMode='spreads', mfSelected=new Set(), mfDropOpen=false, mfType='all', mfStatus='all';
+let mfMode='spreads', mfSelected=new Set(), mfDropOpen=false, mfType='all', mfStatus='all', mfSort='default', mfSortDropOpen=false;
 
 function getFilteredManifest(){
-  return manifestData.filter(img=>{
+  let items=manifestData.filter(img=>{
     if(mfSelected.size>0){if(mfMode==='spreads'){if(!mfSelected.has(img.spread))return false;}else{const ss=new Set(MF_PAGES.filter(p=>mfSelected.has(p.id)).map(p=>p.spread));if(!ss.has(img.spread))return false;}}
     if(mfType!=='all' && img.type!==mfType) return false;
     if(mfStatus!=='all' && img.status!==mfStatus) return false;
     return true;
   });
+  if(mfSort==='newest') items=items.slice().sort((a,b)=>{if(!a.uploadedAt)return 1;if(!b.uploadedAt)return -1;return new Date(b.uploadedAt)-new Date(a.uploadedAt);});
+  if(mfSort==='oldest') items=items.slice().sort((a,b)=>{if(!a.uploadedAt)return 1;if(!b.uploadedAt)return -1;return new Date(a.uploadedAt)-new Date(b.uploadedAt);});
+  return items;
 }
 
 
@@ -1237,11 +1240,23 @@ function buildUploadPanel(){
       </div>
 
     </div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
-      <div id="mfstatus-all" onclick="setMFStatus('all')" style="font-size:10px;color:var(--tx);cursor:pointer;white-space:nowrap;font-weight:600;">All</div>
-      <div id="mfstatus-ok" onclick="setMFStatus('ok')" style="font-size:10px;color:var(--tx3);cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;"><span style="width:7px;height:7px;border-radius:50%;background:#3BA55C;display:inline-block;flex-shrink:0;"></span>Uploaded</div>
-      <div id="mfstatus-error" onclick="setMFStatus('error')" style="font-size:10px;color:var(--tx3);cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;"><span style="width:7px;height:7px;border-radius:50%;background:#D4922A;display:inline-block;flex-shrink:0;"></span>Failed</div>
-      <div id="mfstatus-missing" onclick="setMFStatus('missing')" style="font-size:10px;color:var(--tx3);cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;"><span style="width:7px;height:7px;border-radius:50%;background:#B4B2A9;display:inline-block;flex-shrink:0;"></span>Missing</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div id="mfstatus-all" onclick="setMFStatus('all')" style="font-size:10px;color:var(--tx);cursor:pointer;white-space:nowrap;font-weight:600;">All</div>
+        <div id="mfstatus-ok" onclick="setMFStatus('ok')" style="font-size:10px;color:var(--tx3);cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;"><span style="width:7px;height:7px;border-radius:50%;background:#3BA55C;display:inline-block;flex-shrink:0;"></span>Uploaded</div>
+        <div id="mfstatus-error" onclick="setMFStatus('error')" style="font-size:10px;color:var(--tx3);cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;"><span style="width:7px;height:7px;border-radius:50%;background:#D4922A;display:inline-block;flex-shrink:0;"></span>Failed</div>
+        <div id="mfstatus-missing" onclick="setMFStatus('missing')" style="font-size:10px;color:var(--tx3);cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;"><span style="width:7px;height:7px;border-radius:50%;background:#B4B2A9;display:inline-block;flex-shrink:0;"></span>Missing</div>
+      </div>
+      <div id="mf-sort-trig" onclick="toggleSortDrop(event)" style="display:flex;align-items:center;gap:3px;font-size:10px;font-weight:500;color:var(--tx2);cursor:pointer;user-select:none;white-space:nowrap;position:relative;flex-shrink:0;">
+        <svg class="ic" width="10" height="10" style="color:var(--tx3);"><use href="#ic-clock"/></svg>
+        <span id="mf-sort-lbl">Upload date</span>
+        <svg class="ic" width="9" height="9" id="mf-sort-chev" style="color:var(--tx3);transition:transform 0.15s;transform:rotate(90deg);"><use href="#ic-chev-r"/></svg>
+        <div id="mf-sort-panel" style="position:fixed;width:160px;background:var(--bg);border:0.5px solid var(--bd2);border-radius:var(--rl);box-shadow:0 8px 28px rgba(0,0,0,0.14);z-index:400;opacity:0;pointer-events:none;transform:translateY(-4px) scale(0.97);transition:opacity 0.15s,transform 0.15s;overflow:hidden;">
+          <div id="mf-sort-newest" onclick="setMFSort(event,'newest')" style="display:flex;align-items:center;gap:7px;padding:7px 10px;font-size:11px;color:var(--tx);cursor:pointer;">Newest upload</div>
+          <div id="mf-sort-oldest" onclick="setMFSort(event,'oldest')" style="display:flex;align-items:center;gap:7px;padding:7px 10px;font-size:11px;color:var(--tx);cursor:pointer;">Oldest upload</div>
+          <div id="mf-sort-default" onclick="setMFSort(event,'default')" style="display:flex;align-items:center;gap:7px;padding:7px 10px;font-size:11px;color:var(--tx);cursor:pointer;">Default order</div>
+        </div>
+      </div>
     </div>
   </div>
   <div id="mf-list" style="flex:1;overflow-y:auto;padding:0 12px;scrollbar-gutter:stable;"></div>`;
@@ -1289,6 +1304,58 @@ function setMFType(t){
   renderManifestList();
 }
 
+function toggleSortDrop(e){
+  e.stopPropagation();
+  const panel=document.getElementById('mf-sort-panel');
+  const trig=document.getElementById('mf-sort-trig');
+  const chev=document.getElementById('mf-sort-chev');
+  if(!panel||!trig)return;
+  mfSortDropOpen=!mfSortDropOpen;
+  if(mfSortDropOpen){
+    const rect=trig.getBoundingClientRect();
+    panel.style.top=(rect.bottom+4)+'px';
+    panel.style.right=(window.innerWidth-rect.right)+'px';
+    panel.style.opacity='1';panel.style.pointerEvents='all';panel.style.transform='translateY(0) scale(1)';
+    if(chev)chev.style.transform='rotate(-90deg)';
+  } else {
+    panel.style.opacity='0';panel.style.pointerEvents='none';panel.style.transform='translateY(-4px) scale(0.97)';
+    if(chev)chev.style.transform='rotate(90deg)';
+  }
+  updateSortItems();
+}
+function setMFSort(e,s){
+  e.stopPropagation();
+  mfSort=s;
+  const panel=document.getElementById('mf-sort-panel');
+  const chev=document.getElementById('mf-sort-chev');
+  const lbl=document.getElementById('mf-sort-lbl');
+  if(panel){panel.style.opacity='0';panel.style.pointerEvents='none';panel.style.transform='translateY(-4px) scale(0.97)';}
+  if(chev)chev.style.transform='rotate(90deg)';
+  if(lbl)lbl.textContent=s==='newest'?'Newest upload':s==='oldest'?'Oldest upload':'Upload date';
+  mfSortDropOpen=false;
+  updateSortItems();
+  renderManifestList();
+}
+function updateSortItems(){
+  ['newest','oldest','default'].forEach(s=>{
+    const el=document.getElementById('mf-sort-'+s);
+    if(!el)return;
+    const active=mfSort===s;
+    el.style.fontWeight=active?'500':'400';
+    el.style.background=active?'var(--bg2)':'';
+    el.innerHTML=(active?'<svg class="ic" width="9" height="9" style="color:#1E5751;flex-shrink:0;"><use href="#ic-check"/></svg>':'')+
+      (s==='newest'?'Newest upload':s==='oldest'?'Oldest upload':'Default order');
+  });
+}
+document.addEventListener('click',e=>{
+  if(mfSortDropOpen&&!document.getElementById('mf-sort-trig')?.contains(e.target)){
+    mfSortDropOpen=false;
+    const panel=document.getElementById('mf-sort-panel');
+    const chev=document.getElementById('mf-sort-chev');
+    if(panel){panel.style.opacity='0';panel.style.pointerEvents='none';panel.style.transform='translateY(-4px) scale(0.97)';}
+    if(chev)chev.style.transform='rotate(90deg)';
+  }
+});
 function setMFStatus(s){
   mfStatus=s;
   ['all','ok','error','missing'].forEach(k=>{
