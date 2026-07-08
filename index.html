@@ -1254,6 +1254,7 @@ function buildUploadPanel(){
         <div id="mf-sort-panel" style="position:fixed;width:160px;background:var(--bg);border:0.5px solid var(--bd2);border-radius:var(--rl);box-shadow:0 8px 28px rgba(0,0,0,0.14);z-index:400;opacity:0;pointer-events:none;transform:translateY(-4px) scale(0.97);transition:opacity 0.15s,transform 0.15s;overflow:hidden;">
           <div id="mf-sort-newest" onclick="setMFSort(event,'newest')" style="display:flex;align-items:center;gap:7px;padding:7px 10px;font-size:11px;color:var(--tx);cursor:pointer;">Newest upload</div>
           <div id="mf-sort-oldest" onclick="setMFSort(event,'oldest')" style="display:flex;align-items:center;gap:7px;padding:7px 10px;font-size:11px;color:var(--tx);cursor:pointer;">Oldest upload</div>
+          <div id="mf-sort-default" onclick="setMFSort(event,'default')" style="display:flex;align-items:center;gap:7px;padding:7px 10px;font-size:11px;color:var(--tx);cursor:pointer;">Default order</div>
         </div>
       </div>
     </div>
@@ -1336,14 +1337,14 @@ function setMFSort(e,s){
   renderManifestList();
 }
 function updateSortItems(){
-  ['newest','oldest'].forEach(s=>{
+  ['newest','oldest','default'].forEach(s=>{
     const el=document.getElementById('mf-sort-'+s);
     if(!el)return;
     const active=mfSort===s;
     el.style.fontWeight=active?'500':'400';
     el.style.background=active?'var(--bg2)':'';
     el.innerHTML=(active?'<svg class="ic" width="9" height="9" style="color:#1E5751;flex-shrink:0;"><use href="#ic-check"/></svg>':'')+
-      (s==='newest'?'Newest upload':'Oldest upload');
+      (s==='newest'?'Newest upload':s==='oldest'?'Oldest upload':'Default order');
   });
 }
 document.addEventListener('click',e=>{
