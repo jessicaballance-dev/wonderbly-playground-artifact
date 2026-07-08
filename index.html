@@ -1371,7 +1371,30 @@ function setMFStatus(s){
       b.style.color='var(--tx3)';b.style.fontWeight='400';
     }
   });
+  updateSortTriggerState();
   renderManifestList();
+}
+function updateSortTriggerState(){
+  const disabled=mfStatus==='error'||mfStatus==='missing';
+  const trig=document.getElementById('mf-sort-trig');
+  if(!trig)return;
+  if(disabled){
+    // Close dropdown if open
+    if(mfSortDropOpen){
+      mfSortDropOpen=false;
+      const panel=document.getElementById('mf-sort-panel');
+      const chev=document.getElementById('mf-sort-chev');
+      if(panel){panel.style.opacity='0';panel.style.pointerEvents='none';panel.style.transform='translateY(-4px) scale(0.97)';}
+      if(chev)chev.style.transform='rotate(90deg)';
+    }
+    trig.style.opacity='0.35';
+    trig.style.pointerEvents='none';
+    trig.style.cursor='default';
+  } else {
+    trig.style.opacity='1';
+    trig.style.pointerEvents='auto';
+    trig.style.cursor='pointer';
+  }
 }
 
 const tps={
