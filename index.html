@@ -293,8 +293,8 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
 .bv-body::-webkit-scrollbar{width:5px;}
 .bv-body::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px;}
 .bk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;}
-.bk-card{background:var(--bg);border:2px solid transparent;border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:box-shadow 0.15s,transform 0.12s,border-color 0.15s;}
-.bk-card:hover{box-shadow:0 4px 18px rgba(0,0,0,0.1);transform:translateY(-2px);border-color:#DFF0EE;}
+.bk-card{background:var(--bg);border:0.5px solid var(--bd3);border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:box-shadow 0.15s,transform 0.12s,outline-color 0.15s;outline:2px solid transparent;display:flex;flex-direction:column;}
+.bk-card:hover{box-shadow:0 4px 18px rgba(0,0,0,0.1);transform:translateY(-2px);outline-color:#DFF0EE;}
 .bk-thumb{height:130px;background:#ECEAE3;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;}
 .bk-fmt-badge{position:absolute;top:8px;left:8px;font-size:8px;font-weight:500;padding:2px 7px;border-radius:20px;background:rgba(255,255,255,0.85);color:var(--tx2);letter-spacing:.02em;}
 .bk-status-badge{position:absolute;top:8px;right:8px;font-size:8px;padding:2px 7px;border-radius:20px;font-weight:500;}
@@ -304,7 +304,7 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
 .bk-name{font-size:11px;font-weight:500;color:var(--tx);line-height:1.35;margin-bottom:5px;}
 .bk-sku{font-family:var(--mono);font-size:9px;color:var(--tx3);}
 .bk-slug{font-family:var(--mono);font-size:9px;color:var(--tx3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;}
-.bk-ft{padding:7px 11px;border-top:0.5px solid var(--bd3);display:flex;justify-content:space-between;align-items:center;}
+.bk-ft{padding:7px 11px;border-top:0.5px solid var(--bd3);display:flex;justify-content:space-between;align-items:center;margin-top:auto;}
 .bk-open-btn{font-size:10px;padding:4px 12px;border:0.5px solid #1E5751;border-radius:var(--rm);background:#DFF0EE;color:#1E5751;font-weight:500;cursor:pointer;font-family:var(--sans);}
 .bk-open-btn:hover{background:#cce8e4;border-color:#1E5751;}
 
