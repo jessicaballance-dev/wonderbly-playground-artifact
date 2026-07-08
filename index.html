@@ -293,8 +293,8 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
 .bv-body::-webkit-scrollbar{width:5px;}
 .bv-body::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px;}
 .bk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;}
-.bk-card{background:var(--bg);border:0.5px solid var(--bd2);border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:box-shadow 0.15s,transform 0.12s;}
-.bk-card:hover{box-shadow:0 4px 18px rgba(0,0,0,0.1);transform:translateY(-2px);}
+.bk-card{background:var(--bg);border:2px solid transparent;border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:box-shadow 0.15s,transform 0.12s,border-color 0.15s;}
+.bk-card:hover{box-shadow:0 4px 18px rgba(0,0,0,0.1);transform:translateY(-2px);border-color:#DFF0EE;}
 .bk-thumb{height:130px;background:#ECEAE3;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;}
 .bk-fmt-badge{position:absolute;top:8px;left:8px;font-size:8px;font-weight:500;padding:2px 7px;border-radius:20px;background:rgba(255,255,255,0.85);color:var(--tx2);letter-spacing:.02em;}
 .bk-status-badge{position:absolute;top:8px;right:8px;font-size:8px;padding:2px 7px;border-radius:20px;font-weight:500;}
@@ -1991,7 +1991,6 @@ function renderBkGrid(){
     </div>
     <div class="bk-ft">
       <span style="font-size:9px;color:var(--tx3);">Last run ${b.lastRun}</span>
-      <button class="bk-open-btn" onclick="event.stopPropagation();openBook('${b.id}')">Open</button>
     </div>
   </div>`).join('');
 }
