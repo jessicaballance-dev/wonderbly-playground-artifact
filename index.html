@@ -361,6 +361,7 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
   <symbol id="ic-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
   <symbol id="ic-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></symbol>
   <symbol id="ic-save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></symbol>
+  <symbol id="ic-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
   <symbol id="ic-chev-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></symbol>
   <symbol id="ic-chev-l" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></symbol>
   <symbol id="ic-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></symbol>
@@ -561,6 +562,7 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
               <div class="br">
                 <button class="fb pr" id="btn-run" onclick="doRun()"><svg class="ic" width="11" height="11"><use href="#ic-play"/></svg> <span id="btn-run-lbl">Run</span></button>
                 <button class="fb" id="btn-save-last" onclick="saveFromHistory(0)" style="display:none;flex-shrink:0;"><svg class="ic" width="11" height="11"><use href="#ic-save"/></svg> Save</button>
+                <button class="fb" id="btn-pdf-last" onclick="showToast('PDF download coming soon')" style="display:none;flex-shrink:0;"><svg class="ic" width="11" height="11"><use href="#ic-download"/></svg> Full PDF</button>
               </div>
             </div>
           </div>
@@ -1406,6 +1408,7 @@ const tps={
 // CHIPS + TABS
 function solo(chip,gid){document.querySelectorAll('#'+gid+' .chip').forEach(c=>c.classList.remove('sel'));chip.classList.add('sel');updateRunBtn();}
 let activeTab='fields';
+let runCompleted=false;
 function switchTab(tab){
   activeTab=tab;
   ['fields','history','saved'].forEach(t=>{
@@ -1417,6 +1420,11 @@ function switchTab(tab){
   // Show/hide run footer — not relevant on History tab or Shared sub-tab
   const ft=document.querySelector('.lp-ft');
   if(ft)ft.style.display=(tab==='history'||(tab==='saved'&&activeLibTab==='shared'))?'none':'';
+  // Save and Full PDF only visible on Fields tab after a run
+  const saveBtn=document.getElementById('btn-save-last');
+  const pdfBtn=document.getElementById('btn-pdf-last');
+  if(saveBtn)saveBtn.style.display=(tab==='fields'&&runCompleted)?'':'none';
+  if(pdfBtn)pdfBtn.style.display=(tab==='fields'&&runCompleted)?'':'none';
   updateRunBtn();
 }
 
@@ -1472,7 +1480,7 @@ function renderH(filter){
     return `<div class="ri">
       <div class="ri-hd" style="cursor:pointer;" onclick="toggleRhExp(${i})"><div style="display:flex;align-items:center;gap:6px;flex:1;">${av}<div style="flex:1;"><span class="rt">${[r.name,r.gender,r.phototype].join(' · ')}</span><div style="font-size:10px;color:var(--tx3);margin-top:1px;">${email}</div></div><span style="font-size:10px;color:var(--tx3);margin-right:4px;">${r.time}</span>${chev(exp)}</div></div>
       <div class="rf"><span class="rfield">${r.name}</span><span class="rfield">${r.gender}</span><span class="rfield">${r.phototype}</span><span class="rfield">${r.cover}</span><span class="rfield">${r.locale}</span></div>
-      <div class="ract"><button class="rab pr" onclick="restoreR(${i})"><svg class="ic" width="10" height="10"><use href="#ic-restore"/></svg> Restore inputs</button><button class="rab" onclick="rerunHistory(${i})"><svg class="ic" width="10" height="10"><use href="#ic-play"/></svg> Re-run</button><button class="rab" onclick="saveFromHistory(${i})"><svg class="ic" width="10" height="10"><use href="#ic-save"/></svg> Save</button></div>
+      <div class="ract"><button class="rab pr" onclick="restoreR(${i})"><svg class="ic" width="10" height="10"><use href="#ic-restore"/></svg> Restore inputs</button><button class="rab" onclick="rerunHistory(${i})"><svg class="ic" width="10" height="10"><use href="#ic-play"/></svg> Re-run</button><button class="rab" onclick="saveFromHistory(${i})"><svg class="ic" width="10" height="10"><use href="#ic-save"/></svg> Save</button><button class="rab" onclick="event.stopPropagation();showToast('PDF download coming soon')"><svg class="ic" width="10" height="10"><use href="#ic-download"/></svg> Full PDF</button></div>
       ${extra}
     </div>`;
   }).join('');
@@ -1801,7 +1809,9 @@ function doRun(){
       // Update lightbox page captions
       pages[2].content='Goodnight, '+name;pages[3].content=inscription||'…';pages[4].content=friend1+(friend2?' & '+friend2:'');
       rh.unshift({time:ts,type:'run',name,gender,phototype,cover,locale,friend1,friend2,pages:pg,userInitials:'JB',userEmail:'jessicaballance@wonderbly.com',userColor:'#5B8FDE'});
+      runCompleted=true;
       document.getElementById('btn-save-last').style.display='';
+      document.getElementById('btn-pdf-last').style.display='';
     }
     document.getElementById('hcount').textContent=rh.length;
     document.getElementById('rc').scrollTo({top:0,behavior:'smooth'});
@@ -1934,6 +1944,7 @@ function renderSaved(){
           <button class="rab pr" onclick="event.stopPropagation();restoreSaved(${i})"><svg class="ic" width="10" height="10"><use href="#ic-restore"/></svg> Restore inputs</button>
           <button class="rab" onclick="event.stopPropagation();rerunSaved(${i})"><svg class="ic" width="10" height="10"><use href="#ic-play"/></svg> Re-run</button>
           <button class="rab" onclick="event.stopPropagation();deleteSaved(${i})">Delete</button>
+          <button class="rab" onclick="event.stopPropagation();showToast('PDF download coming soon')"><svg class="ic" width="10" height="10"><use href="#ic-download"/></svg> Full PDF</button>
         </div>
       </div>
     </div>`).join('');
