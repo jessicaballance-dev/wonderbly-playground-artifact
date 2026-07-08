@@ -1249,12 +1249,11 @@ function buildUploadPanel(){
       </div>
       <div id="mf-sort-trig" onclick="toggleSortDrop(event)" style="display:flex;align-items:center;gap:3px;font-size:10px;font-weight:500;color:var(--tx2);cursor:pointer;user-select:none;white-space:nowrap;position:relative;flex-shrink:0;">
         <svg class="ic" width="10" height="10" style="color:var(--tx3);"><use href="#ic-clock"/></svg>
-        <span id="mf-sort-lbl">Default order</span>
+        <span id="mf-sort-lbl">Upload date</span>
         <svg class="ic" width="9" height="9" id="mf-sort-chev" style="color:var(--tx3);transition:transform 0.15s;transform:rotate(90deg);"><use href="#ic-chev-r"/></svg>
         <div id="mf-sort-panel" style="position:fixed;width:160px;background:var(--bg);border:0.5px solid var(--bd2);border-radius:var(--rl);box-shadow:0 8px 28px rgba(0,0,0,0.14);z-index:400;opacity:0;pointer-events:none;transform:translateY(-4px) scale(0.97);transition:opacity 0.15s,transform 0.15s;overflow:hidden;">
           <div id="mf-sort-newest" onclick="setMFSort(event,'newest')" style="display:flex;align-items:center;gap:7px;padding:7px 10px;font-size:11px;color:var(--tx);cursor:pointer;">Newest upload</div>
           <div id="mf-sort-oldest" onclick="setMFSort(event,'oldest')" style="display:flex;align-items:center;gap:7px;padding:7px 10px;font-size:11px;color:var(--tx);cursor:pointer;">Oldest upload</div>
-          <div id="mf-sort-default" onclick="setMFSort(event,'default')" style="display:flex;align-items:center;gap:7px;padding:7px 10px;font-size:11px;color:var(--tx);cursor:pointer;">Default order</div>
         </div>
       </div>
     </div>
@@ -1325,26 +1324,26 @@ function toggleSortDrop(e){
 }
 function setMFSort(e,s){
   e.stopPropagation();
-  mfSort=s;
+  mfSort=(mfSort===s)?'default':s;
   const panel=document.getElementById('mf-sort-panel');
   const chev=document.getElementById('mf-sort-chev');
   const lbl=document.getElementById('mf-sort-lbl');
   if(panel){panel.style.opacity='0';panel.style.pointerEvents='none';panel.style.transform='translateY(-4px) scale(0.97)';}
   if(chev)chev.style.transform='rotate(90deg)';
-  if(lbl)lbl.textContent=s==='newest'?'Newest upload':s==='oldest'?'Oldest upload':'Default order';
+  if(lbl)lbl.textContent=mfSort==='newest'?'Newest upload':mfSort==='oldest'?'Oldest upload':'Upload date';
   mfSortDropOpen=false;
   updateSortItems();
   renderManifestList();
 }
 function updateSortItems(){
-  ['newest','oldest','default'].forEach(s=>{
+  ['newest','oldest'].forEach(s=>{
     const el=document.getElementById('mf-sort-'+s);
     if(!el)return;
     const active=mfSort===s;
     el.style.fontWeight=active?'500':'400';
     el.style.background=active?'var(--bg2)':'';
     el.innerHTML=(active?'<svg class="ic" width="9" height="9" style="color:#1E5751;flex-shrink:0;"><use href="#ic-check"/></svg>':'')+
-      (s==='newest'?'Newest upload':s==='oldest'?'Oldest upload':'Default order');
+      (s==='newest'?'Newest upload':'Oldest upload');
   });
 }
 document.addEventListener('click',e=>{
