@@ -391,6 +391,43 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
 #tool-view{display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0;}
 #tool-view.active{display:flex;}
 
+/* SUITE RESULTS MODE */
+.sr-back-row{display:flex;align-items:center;gap:7px;padding:9px 12px;border-bottom:0.5px solid var(--bd3);cursor:pointer;background:var(--bg2);flex-shrink:0;transition:background 0.1s;user-select:none;}
+.sr-back-row:hover{background:var(--bg3);}
+.sr-badges-row{display:flex;align-items:center;flex-wrap:wrap;gap:5px;padding:7px 12px 6px;border-bottom:0.5px solid var(--bd3);flex-shrink:0;}
+.sr-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;white-space:nowrap;}
+.sr-badge.pass{background:#DFF0EE;color:#1E5751;}
+.sr-badge.warn{background:rgba(212,146,42,0.14);color:#D4922A;}
+.sr-badge.fail{background:rgba(196,82,114,0.12);color:#C45272;}
+.sr-case-row{display:flex;align-items:center;gap:8px;padding:7px 12px;cursor:pointer;border-bottom:0.5px solid var(--bd3);}
+.sr-case-row:hover{background:var(--bg2);}
+.sr-case-row.sel{background:#E8F2F1;}
+.sr-case-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.sr-case-dot.pass{background:#2D8A83;}
+.sr-case-dot.warn{background:#D4922A;}
+.sr-case-dot.fail{background:#C45272;}
+.sr-case-name{font-size:11px;color:var(--tx);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sr-case-row.sel .sr-case-name{font-weight:500;color:#1E5751;}
+.sr-case-tag{font-size:9px;font-weight:500;flex-shrink:0;}
+.sr-case-tag.pass{color:#1E5751;}
+.sr-case-tag.warn{color:#D4922A;}
+.sr-case-tag.fail{color:#C45272;}
+.sr-nav-row{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-top:0.5px solid var(--bd3);flex-shrink:0;}
+.sr-nav-b{font-size:10px;padding:3px 9px;border:0.5px solid var(--bd2);border-radius:var(--rm);background:var(--bg);color:var(--tx2);cursor:pointer;font-family:var(--sans);display:flex;align-items:center;gap:3px;}
+.sr-nav-b:hover{background:var(--bg2);}
+.sr-nav-b:disabled{opacity:0.35;pointer-events:none;}
+.sr-nav-ct{font-size:10px;color:var(--tx3);}
+/* Canvas results header (injected inside #rc) */
+.canvas-rshd{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:9px 16px;background:var(--bg);border-bottom:0.5px solid var(--bd3);gap:10px;}
+.canvas-rshd-bc{font-size:11px;color:var(--tx);display:flex;align-items:center;gap:5px;min-width:0;flex:1;overflow:hidden;}
+.canvas-rshd-suite{color:var(--tx3);white-space:nowrap;}
+.canvas-rshd-sep{color:var(--bd);flex-shrink:0;}
+.canvas-rshd-case{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.canvas-rshd-status{font-size:10px;font-weight:500;white-space:nowrap;flex-shrink:0;}
+.canvas-rshd-status.pass{color:#1E5751;}
+.canvas-rshd-status.warn{color:#D4922A;}
+.canvas-rshd-status.fail{color:#C45272;}
+.canvas-rshd-val{font-size:10px;font-family:var(--mono);color:var(--tx2);background:var(--bg2);border:0.5px solid var(--bd2);border-radius:var(--rm);padding:2px 8px;white-space:nowrap;flex-shrink:0;max-width:120px;overflow:hidden;text-overflow:ellipsis;}
 /* RENDER OVERLAY */
 .render-ov{position:absolute;inset:0;z-index:20;background:rgba(232,229,219,0.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;opacity:0;pointer-events:none;transition:opacity 0.3s;}
 .render-ov.show{opacity:1;pointer-events:all;}
@@ -656,7 +693,7 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
               <div class="hb" id="history-list"></div>
             </div>
             <div class="tab-pane" id="pane-saved">
-              <div class="stab-wrap">
+              <div class="stab-wrap" id="stab-wrap">
                 <div class="stab-pills">
                   <div class="stab-pill active" id="stab-book" onclick="showSavedSubTab('book')">Book (<span id="stab-book-count">0</span>)</div>
                   <div class="stab-pill" id="stab-shared" onclick="showSavedSubTab('shared')">Shared (4)</div>
@@ -669,6 +706,25 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
                 </div>
               </div>
               <div class="hb" id="shared-list" style="display:none;"></div>
+
+              <!-- SUITE RESULTS PANEL (replaces stab-wrap + lists when a suite is running) -->
+              <div id="suite-results" style="display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0;">
+                <div class="sr-back-row" onclick="exitSuiteResultsMode()">
+                  <svg class="ic" width="11" height="11" style="color:var(--tx3);flex-shrink:0;"><use href="#ic-chev-l"/></svg>
+                  <span style="font-size:11px;font-weight:500;color:var(--tx);">Test suites</span>
+                </div>
+                <div class="sr-badges-row" id="sr-badges"></div>
+                <div id="sr-cases" style="flex:1;overflow-y:auto;"></div>
+                <div class="sr-nav-row">
+                  <button class="sr-nav-b" id="sr-prev" onclick="navSuiteCase(-1)">
+                    <svg class="ic" width="9" height="9"><use href="#ic-chev-l"/></svg> Prev
+                  </button>
+                  <span class="sr-nav-ct" id="sr-nav-ct">1 of 23</span>
+                  <button class="sr-nav-b" id="sr-next" onclick="navSuiteCase(1)">
+                    Next <svg class="ic" width="9" height="9"><use href="#ic-chev-r"/></svg>
+                  </button>
+                </div>
+              </div>
             </div>
             <div class="lp-ft">
               <div class="rs-row">
@@ -1552,15 +1608,28 @@ function switchTab(tab){
   const snap=tab==='saved'?savedRsSnap:fieldsRsSnap;
   rsMode=snap.mode;rsSelected=new Set(snap.sel);
   if(rsDropOpen){rsDropOpen=false;const p=document.getElementById('rs-panel');if(p)p.classList.remove('open');}
+  // If leaving saved while in results mode, canvas stays (persistence); left panel will switch via pane hiding
   ['fields','history','saved'].forEach(t=>{
     document.getElementById('tab-'+t).classList.toggle('active',t===tab);
     document.getElementById('pane-'+t).classList.toggle('active',t===tab);
   });
   if(tab==='history')renderH();
-  if(tab==='saved')renderSaved();
-  // Show/hide run footer — not relevant on History tab or Shared sub-tab
+  if(tab==='saved'){
+    if(savedResultsState){
+      // Restore suite results mode
+      document.getElementById('stab-wrap').style.display='none';
+      document.getElementById('saved-list').style.display='none';
+      document.getElementById('shared-list').style.display='none';
+      document.getElementById('suite-results').style.display='flex';
+      renderSuiteResultsPanel();
+      renderSuiteCanvas(savedResultsState.selectedCaseIdx);
+    } else {
+      renderSaved();
+    }
+  }
+  // Show/hide run footer — hidden on History, Shared sub-tab, or results mode
   const ft=document.querySelector('.lp-ft');
-  if(ft)ft.style.display=(tab==='history'||(tab==='saved'&&activeLibTab==='shared'))?'none':'';
+  if(ft)ft.style.display=(tab==='history'||(tab==='saved'&&(activeLibTab==='shared'||savedResultsState)))?'none':'';
   // Save and Full PDF only visible on Fields tab after a run
   const saveBtn=document.getElementById('btn-save-last');
   const pdfBtn=document.getElementById('btn-pdf-last');
@@ -1981,6 +2050,45 @@ const sharedSuites=[
   {name:'Script rejection',count:12,version:'v1.0',desc:'Kanji, Arabic, and Cyrillic script rejection tests',tag:''},
 ];
 
+// SUITE RESULTS STATE
+let savedResultsState = null; // {suiteIdx, suiteName, cases, selectedCaseIdx}
+
+// Simulated test-case data per suite
+const SUITE_CASES = {
+  'Name validation': [
+    {input:'Oliver',status:'pass'},{input:'Mia',status:'pass'},{input:'Aarav',status:'pass'},
+    {input:'Charlotte',status:'pass'},{input:'Sam',status:'pass'},{input:'Noah',status:'pass'},
+    {input:'Mohammed',status:'pass'},{input:'Riya',status:'pass'},{input:'Tarquin',status:'pass'},
+    {input:'Ximena',status:'pass'},{input:'Søren',status:'warning'},{input:'Siobhán',status:'warning'},
+    {input:'José',status:'warning'},{input:'Björn',status:'warning'},{input:'Léa',status:'warning'},
+    {input:'Wang Fang',status:'warning'},{input:'Ségolène',status:'warning'},
+    {input:'<script>',status:'fail'},{input:'',status:'fail'},
+    {input:'A'.repeat(61),status:'fail'},{input:'123',status:'fail'},
+    {input:';DROP TABLE',status:'fail'},{input:'SELECT *',status:'fail'},
+  ],
+  'Dedication validation': [
+    {input:'For Alex, with love',status:'pass'},{input:'Happy birthday!',status:'pass'},
+    {input:'Short',status:'pass'},{input:'With lots of love from Mama & Papa',status:'pass'},
+    {input:'For my favourite person in the world',status:'pass'},
+    {input:'From all of us 💕',status:'warning'},{input:'Wishing you joy ❤️',status:'warning'},
+    {input:'¡Feliz cumpleaños!',status:'warning'},
+    {input:'A'.repeat(121),status:'fail'},{input:'<b>bold</b>',status:'fail'},
+    {input:'javascript:alert()',status:'fail'},{input:'',status:'fail'},
+  ],
+  'Emoji rejection': [
+    {input:'😀',status:'fail'},{input:'🎉 Party!',status:'fail'},
+    {input:'Alex 🌟',status:'warning'},{input:'Oliver',status:'pass'},
+    {input:'Hello 👋',status:'fail'},{input:'🚀',status:'fail'},
+    {input:'Sam',status:'pass'},{input:'Mia 🦋',status:'warning'},
+  ],
+  'Script rejection': [
+    {input:'王芳',status:'fail'},{input:'محمد',status:'fail'},{input:'Александр',status:'fail'},
+    {input:'漢字',status:'fail'},{input:'Oliver',status:'pass'},{input:'Carlos',status:'pass'},
+    {input:'Aarav',status:'pass'},{input:'Søren',status:'warning'},{input:'ελένη',status:'fail'},
+    {input:'Τάσος',status:'fail'},{input:'Фёдор',status:'fail'},{input:'Wei Li',status:'fail'},
+  ],
+};
+
 function showSavedSubTab(tab){
   activeLibTab=tab;
   document.getElementById('stab-book').classList.toggle('active',tab==='book');
@@ -2032,6 +2140,131 @@ function renderSharedSuites(){
     </div>`).join('');
 }
 
+// ── SUITE RESULTS MODE ───────────────────────────────────────────────────────
+function enterSuiteResultsMode(suiteIdx){
+  const s=sharedSuites[suiteIdx];
+  const cases=SUITE_CASES[s.name]||[{input:'Test case 1',status:'pass'},{input:'Test case 2',status:'fail'}];
+  savedResultsState={suiteIdx,suiteName:s.name,cases,selectedCaseIdx:0};
+  // Hide normal saved-tab content, show results panel
+  document.getElementById('stab-wrap').style.display='none';
+  document.getElementById('saved-list').style.display='none';
+  document.getElementById('shared-list').style.display='none';
+  const sr=document.getElementById('suite-results');
+  sr.style.display='flex';
+  // Hide run footer — no Run button in results mode
+  const ft=document.querySelector('.lp-ft');
+  if(ft)ft.style.display='none';
+  renderSuiteResultsPanel();
+  renderSuiteCanvas(0);
+}
+
+function exitSuiteResultsMode(){
+  savedResultsState=null;
+  // Hide results panel
+  const sr=document.getElementById('suite-results');
+  sr.style.display='none';
+  // Restore normal saved-tab content (we came from Shared sub-tab)
+  document.getElementById('stab-wrap').style.display='';
+  document.getElementById('saved-list').style.display=activeLibTab==='book'?'':'none';
+  document.getElementById('shared-list').style.display=activeLibTab==='shared'?'':'none';
+  // Re-render the suites list
+  renderSharedSuites();
+  // Restore run footer: hidden for Shared sub-tab
+  const ft=document.querySelector('.lp-ft');
+  if(ft)ft.style.display=activeLibTab==='shared'?'none':'';
+  // Clear canvas back to empty
+  const rc=document.getElementById('rc');
+  rc.innerHTML=originalCanvasHTML;
+  const rgt=document.getElementById('rc-guides-toggle');
+  if(rgt)rgt.style.display='none';
+}
+
+function renderSuiteResultsPanel(){
+  if(!savedResultsState)return;
+  const {cases,selectedCaseIdx,suiteName}=savedResultsState;
+  const nPass=cases.filter(c=>c.status==='pass').length;
+  const nWarn=cases.filter(c=>c.status==='warning').length;
+  const nFail=cases.filter(c=>c.status==='fail').length;
+  // Badges row: suite name + stat chips
+  const badgesEl=document.getElementById('sr-badges');
+  if(badgesEl){
+    badgesEl.innerHTML=
+      `<span style="font-size:10px;font-weight:500;color:var(--tx);white-space:nowrap;margin-right:2px;">${suiteName}</span>`+
+      (nPass?`<span class="sr-badge pass">${nPass} passed</span>`:'')+
+      (nWarn?`<span class="sr-badge warn">${nWarn} warned</span>`:'')+
+      (nFail?`<span class="sr-badge fail">${nFail} rejected</span>`:'');
+  }
+  // Case list
+  const casesEl=document.getElementById('sr-cases');
+  if(casesEl){
+    casesEl.innerHTML=cases.map((c,i)=>{
+      const tag=c.status==='pass'?'Pass':c.status==='warning'?'Warn':'Fail';
+      const nm=c.input?c.input:`<em style="color:var(--tx3)">(empty)</em>`;
+      return `<div class="sr-case-row${i===selectedCaseIdx?' sel':''}" onclick="selectSuiteCase(${i})">
+        <span class="sr-case-dot ${c.status}"></span>
+        <span class="sr-case-name">${nm}</span>
+        <span class="sr-case-tag ${c.status}">${tag}</span>
+      </div>`;
+    }).join('');
+    // Scroll selected into view
+    const sel=casesEl.children[selectedCaseIdx];
+    if(sel)setTimeout(()=>sel.scrollIntoView({block:'nearest'}),0);
+  }
+  // Nav
+  const ct=document.getElementById('sr-nav-ct');
+  if(ct)ct.textContent=`${selectedCaseIdx+1} of ${cases.length}`;
+  const prev=document.getElementById('sr-prev');
+  const next=document.getElementById('sr-next');
+  if(prev)prev.disabled=selectedCaseIdx===0;
+  if(next)next.disabled=selectedCaseIdx===cases.length-1;
+}
+
+function selectSuiteCase(idx){
+  if(!savedResultsState)return;
+  savedResultsState.selectedCaseIdx=idx;
+  renderSuiteResultsPanel();
+  renderSuiteCanvas(idx);
+}
+
+function navSuiteCase(dir){
+  if(!savedResultsState)return;
+  const next=savedResultsState.selectedCaseIdx+dir;
+  if(next<0||next>=savedResultsState.cases.length)return;
+  selectSuiteCase(next);
+}
+
+function renderSuiteCanvas(caseIdx){
+  if(!savedResultsState)return;
+  const c=savedResultsState.cases[caseIdx];
+  const {suiteName}=savedResultsState;
+  const statusLabel=c.status==='pass'?'Passed':c.status==='warning'?'Warning':'Rejected';
+  const statusCls=c.status==='pass'?'pass':c.status==='warning'?'warn':'fail';
+  const valLabel=c.input?`"${c.input.length>24?c.input.slice(0,24)+'…':c.input}"` : '(empty)';
+  const displayName=c.input||'(empty)';
+  // Config for spread renders — name field carries the test input
+  const cfg={
+    name:c.input||'test',gender:'girl',phototype:'type-ii',cover:'cover-i',locale:'EN-GB',
+    friend1:'Sam',friend2:'Jordan',friend3:'River',friend4:'Casey',friend5:'',friend6:'',friend7:''
+  };
+  // Canvas header (sticky inside #rc)
+  const hdHtml=`<div class="canvas-rshd">
+    <div class="canvas-rshd-bc">
+      <span class="canvas-rshd-suite">${suiteName}</span>
+      <span class="canvas-rshd-sep">›</span>
+      <span class="canvas-rshd-case">${displayName}</span>
+      <span class="canvas-rshd-status ${statusCls}">· ${statusLabel}</span>
+    </div>
+    <span class="canvas-rshd-val">${valLabel}</span>
+  </div>`;
+  const spreadsHtml=buildRunSpreads(cfg);
+  const rc=document.getElementById('rc');
+  rc.innerHTML=hdHtml+'<div style="height:4px;"></div>'+spreadsHtml+'<div style="height:80px;"></div>';
+  rc.querySelectorAll('.pp').forEach((pp,i)=>{pp.style.cursor='pointer';pp.onclick=()=>openLB(i);});
+  rc.scrollTo({top:0,behavior:'smooth'});
+  const rgt=document.getElementById('rc-guides-toggle');
+  if(rgt)rgt.style.display='none';
+}
+
 function duplicateSuite(i){
   const s=sharedSuites[i];
   const configName=s.name+' (copy)';
@@ -2050,14 +2283,20 @@ function runSharedSuite(i){
   const s=sharedSuites[i];
   const dot=document.getElementById('run-dot'),lbl=document.getElementById('run-label');
   dot.className='rd run';lbl.textContent='Running…';
+  // Animate the run button briefly
+  const btn=document.getElementById('btn-run');if(btn)btn.disabled=true;
+  renderOvTimer=setTimeout(showRenderOv,500);
   setTimeout(()=>{
+    clearTimeout(renderOvTimer);hideRenderOv();
+    if(btn)btn.disabled=false;
     dot.className='rd done';
     const now=new Date();
     const ts=now.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][now.getMonth()]+', '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
     lbl.textContent=s.name+' · '+ts;
     rh.unshift({time:ts,type:'run',name:s.name,sign:'Shared suite',drink:'',cover:'',locale:'EN-GB',version:s.version,pages:selectedPages(),userInitials:'JB',userEmail:'jessicaballance@wonderbly.com',userColor:'#4A35A8'});
     document.getElementById('hcount').textContent=rh.length;
-  },1200);
+    enterSuiteResultsMode(i);
+  },1400);
 }
 
 function showToast(msg){
