@@ -1126,7 +1126,7 @@ function copyUrl(el,url){
 }
 
 // LIGHTBOX
-const pages=[
+let pages=[
   {label:'Back cover',spread:'Full cover',content:''},
   {label:'Front cover',spread:'Full cover',content:''},
   {label:'Page 1',spread:'Spread 1 · pp 1–2',content:'Inscription'},
@@ -1137,7 +1137,7 @@ const pages=[
   {label:'Page 6',spread:'Spread 3 · pp 5–6',content:''},
 ];
 // lbSpreads: each entry is an array of page indices
-const lbSpreads=[[0,1],[2,3],[4,5],[6,7]];
+let lbSpreads=[[0,1],[2,3],[4,5],[6,7]];
 function spreadOf(pi){return lbSpreads.findIndex(s=>s.includes(pi));}
 
 let lbc=0,lbz=1,lbX=0,lbY=0,lbMode='page';
@@ -1162,7 +1162,15 @@ function toggleGuides(on){
   ['lb-guides-cb','rc-guides-cb'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=on;});
   document.querySelectorAll('.guides-cb').forEach(el=>{el.checked=on;});
 }
-function closeLB(){document.getElementById('lb').classList.remove('open');}
+let _saLbSavedPages=null,_saLbSavedSpreads=null;
+function closeLB(){
+  document.getElementById('lb').classList.remove('open');
+  if(window._saLbActive){
+    pages=_saLbSavedPages; lbSpreads=_saLbSavedSpreads;
+    _saLbSavedPages=null; _saLbSavedSpreads=null;
+    window._saLbActive=false;
+  }
+}
 function lbNav(d){
   if(lbMode==='spread'){
     const si=spreadOf(lbc);
@@ -2170,70 +2178,35 @@ function toggleSaRow(hdr){
   hdr.closest('.sa-grp').classList.toggle('open');
 }
 
-// Lightbox state
-let _saLbCase=0,_saLbPage=0,_saLbTotal=0;
+// Suite thumbnail lightbox — reuses the main LB by temporarily swapping pages/lbSpreads
 function openSaLightbox(caseIdx,pageIdx,pageCount){
-  _saLbCase=caseIdx; _saLbPage=pageIdx; _saLbTotal=pageCount;
-  _renderSaLightbox();
-  document.getElementById('saLightbox').classList.add('open');
-}
-function closeSaLightbox(){
-  document.getElementById('saLightbox').classList.remove('open');
-}
-function stepSaLightbox(dir){
-  _saLbPage=Math.max(0,Math.min(_saLbTotal-1,_saLbPage+dir));
-  _renderSaLightbox();
-}
-function _renderSaLightbox(){
   const s=sharedSuites[window._saActiveSuiteIdx];
   const cases=SUITE_CASES[s.name]||[];
-  const c=cases[_saLbCase]||{};
-  const k=_saLbPage;
-  const lbl=k===0?'Cover':'p.'+k;
-  const col=PAGE_THUMB_COLORS[k%PAGE_THUMB_COLORS.length];
-  const statusLabel=c.status==='pass'?'Passed':c.status==='warning'?'Warning':'Rejected';
-  document.getElementById('saLbTitle').innerHTML=
-    `<span class="sa-dot ${c.status}" style="display:inline-block;margin-right:6px;"></span>`+
-    `<span>${c.input||'(empty)'}</span>`+
-    `<span class="sa-status ${c.status}" style="margin-left:8px;font-size:11px;">${statusLabel}</span>`;
-  const card=document.getElementById('saLbCard');
-  card.style.background=col;
-  card.innerHTML=`<svg width="32" height="32" style="color:rgba(0,0,0,0.18)"><use href="${k===0?'#ic-book':'#ic-file'}"/></svg>`;
-  document.getElementById('saLbLbl').textContent=lbl;
-  document.getElementById('saLbCounter').textContent=`${k+1} / ${_saLbTotal}`;
-  document.getElementById('saLbPrev').disabled=(k===0);
-  document.getElementById('saLbNext').disabled=(k===_saLbTotal-1);
+  const c=cases[caseIdx]||{};
+  // Build fake page objects for this test case
+  const fp=[];
+  for(let k=0;k<pageCount;k++){
+    fp.push({
+      label:k===0?'Cover':'p.'+k,
+      spread:k===0?'Cover':`Spread ${Math.ceil(k/2)}`,
+      content:c.input||''
+    });
+  }
+  // Build spreads (pairs)
+  const fs=[];
+  for(let k=0;k<pageCount;k+=2){
+    fs.push(k+1<pageCount?[k,k+1]:[k]);
+  }
+  // Swap globals, open main LB, restore on close
+  _saLbSavedPages=pages; _saLbSavedSpreads=lbSpreads;
+  pages=fp; lbSpreads=fs;
+  window._saLbActive=true;
+  openLB(pageIdx);
 }
 
 function buildSuiteAccordionCanvas(suiteIdx){
   batchCanvasActive=true;
   window._saActiveSuiteIdx=suiteIdx;
-  // Inject lightbox once
-  if(!document.getElementById('saLightbox')){
-    document.body.insertAdjacentHTML('beforeend',`
-      <div id="saLightbox" class="sa-lb" onclick="if(event.target===this)closeSaLightbox()">
-        <div class="sa-lb-panel">
-          <div class="sa-lb-hdr">
-            <div id="saLbTitle" class="sa-lb-case"></div>
-            <button class="sa-lb-close" onclick="closeSaLightbox()">✕</button>
-          </div>
-          <div id="saLbCard" class="sa-lb-card"></div>
-          <div id="saLbLbl" class="sa-lb-lbl"></div>
-          <div class="sa-lb-nav">
-            <button class="sa-lb-btn" id="saLbPrev" onclick="stepSaLightbox(-1)">←</button>
-            <span class="sa-lb-counter" id="saLbCounter"></span>
-            <button class="sa-lb-btn" id="saLbNext" onclick="stepSaLightbox(1)">→</button>
-          </div>
-        </div>
-      </div>`);
-    document.addEventListener('keydown',function(e){
-      const lb=document.getElementById('saLightbox');
-      if(!lb||!lb.classList.contains('open'))return;
-      if(e.key==='Escape')closeSaLightbox();
-      if(e.key==='ArrowLeft')stepSaLightbox(-1);
-      if(e.key==='ArrowRight')stepSaLightbox(1);
-    });
-  }
   const s=sharedSuites[suiteIdx];
   const cases=SUITE_CASES[s.name]||[];
   const pg=selectedPages();
