@@ -1502,7 +1502,15 @@ function rerunBatch(i){
     buildBatchCanvas(r.batchConfigs);
   },1400);
 }
-function rerunHistory(i){restoreR(i);setTimeout(()=>doRun(),100);}
+function rerunHistory(i){
+  // Restore field values without switching tabs or showing toast
+  const r=rh[i];
+  document.getElementById('f-name').value=r.name;
+  ['gender','phototype','coverstyle','locale'].forEach(g=>document.querySelectorAll('#'+g+' .chip').forEach(c=>c.classList.remove('sel')));
+  const m=(g,v)=>document.querySelectorAll('#'+g+' .chip').forEach(c=>{if(c.textContent.trim()===v)c.classList.add('sel');});
+  m('gender',r.gender);m('phototype',r.phototype);m('coverstyle',r.cover);m('locale',r.locale==='EN-GB'?'English (UK)':'English (US)');
+  setTimeout(()=>doRun(),100);
+}
 function saveFromHistory(i){
   const r=rh[i];
   pendingRunData={ts:r.time,name:r.name,gender:r.gender,phototype:r.phototype,cover:r.cover,locale:r.locale};
