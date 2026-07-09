@@ -407,14 +407,14 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
 .sa-pages{font-size:10px;color:var(--tx3);flex-shrink:0;margin-left:4px;}
 .sa-chev{flex-shrink:0;color:var(--tx3);transition:transform 0.18s;}
 .sa-grp.open .sa-chev{transform:rotate(90deg);}
-.sa-body{display:none;border-bottom:0.5px solid var(--bd3);background:var(--bg);}
+.sa-body{display:none;border-bottom:0.5px solid var(--bd3);background:#E8E5DB;}
 .sa-grp.open .sa-body{display:block;}
 .sa-thumbs{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px 12px;}
 .sa-thumbs::-webkit-scrollbar{height:3px;}
 .sa-thumbs::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px;}
 .sa-thumb{flex-shrink:0;text-align:center;cursor:pointer;}
-.sa-thumb:hover .sa-thumb-card{border-color:rgba(0,0,0,0.22);box-shadow:0 1px 4px rgba(0,0,0,0.08);}
-.sa-thumb-card{width:80px;height:113px;border-radius:4px;border:0.5px solid rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:center;transition:border-color 0.1s,box-shadow 0.1s;}
+.sa-thumb:hover .sa-thumb-card{box-shadow:0 3px 10px rgba(0,0,0,0.18);}
+.sa-thumb-card{width:80px;height:113px;border-radius:4px;background:#fff;box-shadow:0 1px 5px rgba(0,0,0,0.12);display:flex;align-items:center;justify-content:center;transition:box-shadow 0.1s;}
 .sa-thumb-lbl{font-size:9px;color:var(--tx3);margin-top:4px;}
 /* Lightbox */
 .sa-lb{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.15s;}
@@ -432,7 +432,7 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
 .sa-lb-btn:disabled{opacity:0.3;cursor:default;}
 .sa-lb-counter{font-size:11px;color:var(--tx3);min-width:60px;text-align:center;}
 /* Suite summary bar */
-.sa-summary{display:flex;align-items:center;gap:6px;padding:9px 16px 8px;background:var(--bg);border-bottom:0.5px solid var(--bd3);flex-shrink:0;}
+.sa-summary{display:flex;align-items:center;gap:6px;padding:9px 16px 8px;background:var(--bg);border-bottom:0.5px solid var(--bd3);flex-shrink:0;height:39px;box-sizing:border-box;}
 .sa-sum-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;}
 .sa-sum-badge.pass{background:#DFF0EE;color:#1E5751;}
 .sa-sum-badge.warn,.sa-sum-badge.warning{background:rgba(212,146,42,0.14);color:#D4922A;}
@@ -2163,9 +2163,8 @@ function suiteThumbnails(pageCount, caseIdx){
   let h='';
   for(let k=0;k<pageCount;k++){
     const lbl=k===0?'Cover':'p.'+k;
-    const col=PAGE_THUMB_COLORS[k%PAGE_THUMB_COLORS.length];
     h+=`<div class="sa-thumb" onclick="openSaLightbox(${caseIdx},${k},${pageCount})">
-      <div class="sa-thumb-card" style="background:${col};">
+      <div class="sa-thumb-card">
         <svg width="16" height="16" style="color:rgba(0,0,0,0.18)"><use href="${k===0?'#ic-book':'#ic-file'}"/></svg>
       </div>
       <div class="sa-thumb-lbl">${lbl}</div>
