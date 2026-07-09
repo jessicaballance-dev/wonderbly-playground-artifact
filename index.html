@@ -416,7 +416,7 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
 .sa-thumb-card{width:58px;height:82px;border-radius:3px;border:0.5px solid rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:center;}
 .sa-thumb-lbl{font-size:9px;color:var(--tx3);margin-top:3px;}
 /* Suite summary bar */
-.sa-summary{display:flex;align-items:center;gap:6px;padding:9px 16px;background:var(--bg);border-bottom:0.5px solid var(--bd3);flex-shrink:0;}
+.sa-summary{display:flex;align-items:center;gap:6px;padding:9px 16px 8px;background:var(--bg);border-bottom:0.5px solid var(--bd3);flex-shrink:0;}
 .sa-sum-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;}
 .sa-sum-badge.pass{background:#DFF0EE;color:#1E5751;}
 .sa-sum-badge.warn{background:rgba(212,146,42,0.14);color:#D4922A;}
@@ -2150,11 +2150,7 @@ function suiteThumbnails(pageCount){
 }
 
 function toggleSaRow(hdr){
-  const grp=hdr.closest('.sa-grp');
-  const wasOpen=grp.classList.contains('open');
-  // Close all other open rows
-  document.querySelectorAll('.sa-grp.open').forEach(g=>g.classList.remove('open'));
-  if(!wasOpen)grp.classList.add('open');
+  hdr.closest('.sa-grp').classList.toggle('open');
 }
 
 function buildSuiteAccordionCanvas(suiteIdx){
