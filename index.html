@@ -412,9 +412,25 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
 .sa-thumbs{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px 12px;}
 .sa-thumbs::-webkit-scrollbar{height:3px;}
 .sa-thumbs::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px;}
-.sa-thumb{flex-shrink:0;text-align:center;}
-.sa-thumb-card{width:58px;height:82px;border-radius:3px;border:0.5px solid rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:center;}
-.sa-thumb-lbl{font-size:9px;color:var(--tx3);margin-top:3px;}
+.sa-thumb{flex-shrink:0;text-align:center;cursor:pointer;}
+.sa-thumb:hover .sa-thumb-card{border-color:rgba(0,0,0,0.22);box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+.sa-thumb-card{width:80px;height:113px;border-radius:4px;border:0.5px solid rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:center;transition:border-color 0.1s,box-shadow 0.1s;}
+.sa-thumb-lbl{font-size:9px;color:var(--tx3);margin-top:4px;}
+/* Lightbox */
+.sa-lb{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.15s;}
+.sa-lb.open{opacity:1;pointer-events:all;}
+.sa-lb-panel{background:var(--bg);border-radius:10px;padding:20px 24px 24px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 8px 40px rgba(0,0,0,0.18);}
+.sa-lb-hdr{display:flex;align-items:center;gap:8px;width:100%;}
+.sa-lb-case{font-size:13px;font-weight:500;color:var(--tx);flex:1;}
+.sa-lb-close{cursor:pointer;color:var(--tx3);background:none;border:none;font-size:16px;line-height:1;padding:2px 4px;}
+.sa-lb-close:hover{color:var(--tx);}
+.sa-lb-card{border-radius:6px;border:0.5px solid rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:center;width:240px;height:340px;}
+.sa-lb-lbl{font-size:11px;color:var(--tx2);}
+.sa-lb-nav{display:flex;align-items:center;gap:12px;}
+.sa-lb-btn{cursor:pointer;background:var(--bg2);border:0.5px solid var(--bd3);border-radius:5px;padding:5px 14px;font-size:13px;color:var(--tx2);}
+.sa-lb-btn:hover:not(:disabled){background:var(--bg3);}
+.sa-lb-btn:disabled{opacity:0.3;cursor:default;}
+.sa-lb-counter{font-size:11px;color:var(--tx3);min-width:60px;text-align:center;}
 /* Suite summary bar */
 .sa-summary{display:flex;align-items:center;gap:6px;padding:9px 16px 8px;background:var(--bg);border-bottom:0.5px solid var(--bd3);flex-shrink:0;}
 .sa-sum-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;}
@@ -2135,14 +2151,17 @@ function runSharedSuite(i){
 // ── SUITE ACCORDION (Approach A) ─────────────────────────────────────────────
 const PAGE_THUMB_COLORS=['#D4E8FF','#E4D4FF','#D4F0E0','#FFE8D0','#FFD4D8','#D4F4FF','#EAF4D4','#FFF0D4'];
 
-function suiteThumbnails(pageCount){
+function suiteThumbnails(pageCount, caseIdx){
   let h='';
   for(let k=0;k<pageCount;k++){
     const lbl=k===0?'Cover':'p.'+k;
     const col=PAGE_THUMB_COLORS[k%PAGE_THUMB_COLORS.length];
-    h+=`<div class="sa-thumb"><div class="sa-thumb-card" style="background:${col};">
-      <svg width="14" height="14" style="color:rgba(0,0,0,0.18)"><use href="${k===0?'#ic-book':'#ic-file'}"/></svg>
-    </div><div class="sa-thumb-lbl">${lbl}</div></div>`;
+    h+=`<div class="sa-thumb" onclick="openSaLightbox(${caseIdx},${k},${pageCount})">
+      <div class="sa-thumb-card" style="background:${col};">
+        <svg width="16" height="16" style="color:rgba(0,0,0,0.18)"><use href="${k===0?'#ic-book':'#ic-file'}"/></svg>
+      </div>
+      <div class="sa-thumb-lbl">${lbl}</div>
+    </div>`;
   }
   return h;
 }
@@ -2151,8 +2170,70 @@ function toggleSaRow(hdr){
   hdr.closest('.sa-grp').classList.toggle('open');
 }
 
+// Lightbox state
+let _saLbCase=0,_saLbPage=0,_saLbTotal=0;
+function openSaLightbox(caseIdx,pageIdx,pageCount){
+  _saLbCase=caseIdx; _saLbPage=pageIdx; _saLbTotal=pageCount;
+  _renderSaLightbox();
+  document.getElementById('saLightbox').classList.add('open');
+}
+function closeSaLightbox(){
+  document.getElementById('saLightbox').classList.remove('open');
+}
+function stepSaLightbox(dir){
+  _saLbPage=Math.max(0,Math.min(_saLbTotal-1,_saLbPage+dir));
+  _renderSaLightbox();
+}
+function _renderSaLightbox(){
+  const s=sharedSuites[window._saActiveSuiteIdx];
+  const cases=SUITE_CASES[s.name]||[];
+  const c=cases[_saLbCase]||{};
+  const k=_saLbPage;
+  const lbl=k===0?'Cover':'p.'+k;
+  const col=PAGE_THUMB_COLORS[k%PAGE_THUMB_COLORS.length];
+  const statusLabel=c.status==='pass'?'Passed':c.status==='warning'?'Warning':'Rejected';
+  document.getElementById('saLbTitle').innerHTML=
+    `<span class="sa-dot ${c.status}" style="display:inline-block;margin-right:6px;"></span>`+
+    `<span>${c.input||'(empty)'}</span>`+
+    `<span class="sa-status ${c.status}" style="margin-left:8px;font-size:11px;">${statusLabel}</span>`;
+  const card=document.getElementById('saLbCard');
+  card.style.background=col;
+  card.innerHTML=`<svg width="32" height="32" style="color:rgba(0,0,0,0.18)"><use href="${k===0?'#ic-book':'#ic-file'}"/></svg>`;
+  document.getElementById('saLbLbl').textContent=lbl;
+  document.getElementById('saLbCounter').textContent=`${k+1} / ${_saLbTotal}`;
+  document.getElementById('saLbPrev').disabled=(k===0);
+  document.getElementById('saLbNext').disabled=(k===_saLbTotal-1);
+}
+
 function buildSuiteAccordionCanvas(suiteIdx){
   batchCanvasActive=true;
+  window._saActiveSuiteIdx=suiteIdx;
+  // Inject lightbox once
+  if(!document.getElementById('saLightbox')){
+    document.body.insertAdjacentHTML('beforeend',`
+      <div id="saLightbox" class="sa-lb" onclick="if(event.target===this)closeSaLightbox()">
+        <div class="sa-lb-panel">
+          <div class="sa-lb-hdr">
+            <div id="saLbTitle" class="sa-lb-case"></div>
+            <button class="sa-lb-close" onclick="closeSaLightbox()">✕</button>
+          </div>
+          <div id="saLbCard" class="sa-lb-card"></div>
+          <div id="saLbLbl" class="sa-lb-lbl"></div>
+          <div class="sa-lb-nav">
+            <button class="sa-lb-btn" id="saLbPrev" onclick="stepSaLightbox(-1)">←</button>
+            <span class="sa-lb-counter" id="saLbCounter"></span>
+            <button class="sa-lb-btn" id="saLbNext" onclick="stepSaLightbox(1)">→</button>
+          </div>
+        </div>
+      </div>`);
+    document.addEventListener('keydown',function(e){
+      const lb=document.getElementById('saLightbox');
+      if(!lb||!lb.classList.contains('open'))return;
+      if(e.key==='Escape')closeSaLightbox();
+      if(e.key==='ArrowLeft')stepSaLightbox(-1);
+      if(e.key==='ArrowRight')stepSaLightbox(1);
+    });
+  }
   const s=sharedSuites[suiteIdx];
   const cases=SUITE_CASES[s.name]||[];
   const pg=selectedPages();
@@ -2188,7 +2269,7 @@ function buildSuiteAccordionCanvas(suiteIdx){
           <span class="rfield">girl</span><span class="rfield">type-ii</span>
           <span class="rfield">cover-i</span><span class="rfield">EN-GB</span>
         </div>
-        <div class="sa-thumbs">${suiteThumbnails(pg)}</div>
+        <div class="sa-thumbs">${suiteThumbnails(pg,i)}</div>
       </div>
     </div>`;
   });
