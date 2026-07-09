@@ -397,19 +397,19 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
 .sa-hdr:hover{background:var(--bg3);}
 .sa-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .sa-dot.pass{background:#2D8A83;}
-.sa-dot.warn{background:#D4922A;}
+.sa-dot.warn,.sa-dot.warning{background:#D4922A;}
 .sa-dot.fail{background:#C45272;}
 .sa-name{font-size:12px;font-weight:500;color:var(--tx);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sa-status{font-size:10px;flex-shrink:0;font-weight:500;}
 .sa-status.pass{color:#2D8A83;}
-.sa-status.warn{color:#D4922A;}
+.sa-status.warn,.sa-status.warning{color:#D4922A;}
 .sa-status.fail{color:#C45272;}
 .sa-pages{font-size:10px;color:var(--tx3);flex-shrink:0;margin-left:4px;}
 .sa-chev{flex-shrink:0;color:var(--tx3);transition:transform 0.18s;}
 .sa-grp.open .sa-chev{transform:rotate(90deg);}
 .sa-body{display:none;border-bottom:0.5px solid var(--bd3);background:var(--bg);}
 .sa-grp.open .sa-body{display:block;}
-.sa-thumbs{display:flex;gap:6px;padding:10px 16px 12px;overflow-x:auto;}
+.sa-thumbs{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px 12px;}
 .sa-thumbs::-webkit-scrollbar{height:3px;}
 .sa-thumbs::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px;}
 .sa-thumb{flex-shrink:0;text-align:center;}
@@ -419,7 +419,7 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
 .sa-summary{display:flex;align-items:center;gap:6px;padding:9px 16px 8px;background:var(--bg);border-bottom:0.5px solid var(--bd3);flex-shrink:0;}
 .sa-sum-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;}
 .sa-sum-badge.pass{background:#DFF0EE;color:#1E5751;}
-.sa-sum-badge.warn{background:rgba(212,146,42,0.14);color:#D4922A;}
+.sa-sum-badge.warn,.sa-sum-badge.warning{background:rgba(212,146,42,0.14);color:#D4922A;}
 .sa-sum-badge.fail{background:rgba(196,82,114,0.12);color:#C45272;}
 /* RENDER OVERLAY */
 .render-ov{position:absolute;inset:0;z-index:20;background:rgba(232,229,219,0.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;opacity:0;pointer-events:none;transition:opacity 0.3s;}
@@ -2136,16 +2136,14 @@ function runSharedSuite(i){
 const PAGE_THUMB_COLORS=['#D4E8FF','#E4D4FF','#D4F0E0','#FFE8D0','#FFD4D8','#D4F4FF','#EAF4D4','#FFF0D4'];
 
 function suiteThumbnails(pageCount){
-  const show=Math.min(6,pageCount);
   let h='';
-  for(let k=0;k<show;k++){
+  for(let k=0;k<pageCount;k++){
     const lbl=k===0?'Cover':'p.'+k;
     const col=PAGE_THUMB_COLORS[k%PAGE_THUMB_COLORS.length];
     h+=`<div class="sa-thumb"><div class="sa-thumb-card" style="background:${col};">
       <svg width="14" height="14" style="color:rgba(0,0,0,0.18)"><use href="${k===0?'#ic-book':'#ic-file'}"/></svg>
     </div><div class="sa-thumb-lbl">${lbl}</div></div>`;
   }
-  if(pageCount>6)h+=`<div class="sa-thumb"><div class="sa-thumb-card" style="border:1px dashed var(--bd2);"><span style="font-size:10px;color:var(--tx3);">+${pageCount-6}</span></div><div class="sa-thumb-lbl">more</div></div>`;
   return h;
 }
 
