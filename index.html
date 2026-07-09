@@ -12,6 +12,28 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
 
 .hub{display:flex;flex-direction:column;height:700px;width:100%;max-width:1100px;background:var(--bg);border:0.5px solid var(--bd2);border-radius:var(--rl);overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.12);}
 .topbar{display:flex;align-items:center;gap:10px;height:40px;padding:0 14px;background:var(--bg2);border-bottom:0.5px solid var(--bd3);flex-shrink:0;}
+.tb-spacer{flex:1;}
+.schema-btn{width:26px;height:26px;border-radius:var(--r);border:0.5px solid var(--bd2);background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;flex-shrink:0;transition:border-color 0.15s,background 0.15s;}
+.schema-btn:hover{border-color:var(--bd);background:var(--bg);}
+.schema-btn .sb-tip{position:fixed;background:rgba(20,20,20,0.88);color:#fff;font-size:10px;border-radius:6px;padding:4px 8px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:3000;transform:translateX(-50%);}
+.schema-btn:hover .sb-tip{opacity:1;}
+.schema-ov{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1500;display:none;align-items:center;justify-content:center;}
+.schema-ov.open{display:flex;}
+.schema-modal{background:var(--bg);border-radius:var(--rl);width:480px;max-height:540px;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.18);}
+.schema-mhd{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:0.5px solid var(--bd3);flex-shrink:0;}
+.schema-mhd-title{font-size:13px;font-weight:500;color:var(--tx);flex:1;}
+.schema-mhd-sub{font-size:10px;color:var(--tx3);font-family:var(--mono);}
+.schema-close{width:24px;height:24px;border-radius:var(--r);border:0.5px solid var(--bd2);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--tx3);}
+.schema-close:hover{background:var(--bg2);}
+.schema-body{overflow-y:auto;flex:1;padding:12px 16px;}
+.schema-section{margin-bottom:16px;}
+.schema-section-label{font-size:9px;font-weight:500;color:var(--tx3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;}
+.schema-row{display:flex;align-items:baseline;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--bd3);}
+.schema-row:last-child{border-bottom:none;}
+.schema-field-name{font-size:11px;font-weight:500;color:var(--tx);font-family:var(--mono);min-width:120px;}
+.schema-field-type{font-size:10px;color:var(--tx3);background:var(--bg2);border:0.5px solid var(--bd2);border-radius:var(--r);padding:1px 6px;flex-shrink:0;}
+.schema-field-desc{font-size:10px;color:var(--tx3);flex:1;}
+.schema-req{font-size:9px;color:#C45272;flex-shrink:0;}
 .logo{width:24px;height:24px;border-radius:5px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .badge{font-size:10px;padding:2px 7px;border-radius:20px;background:var(--bg3);color:var(--tx2);}
 .body{flex:1;display:flex;overflow:hidden;min-height:0;position:relative;}
@@ -399,6 +421,50 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
     <span id="tb-title" style="font-size:12px;font-weight:500;color:#1A1916">Goodnight Everyone</span>
     <span id="tb-sku" style="font-size:10px;color:#9E9C97;font-family:var(--mono);margin-left:2px;">SKU–004</span>
     <span id="tb-status" class="badge">Draft</span>
+    <div class="tb-spacer"></div>
+    <div class="schema-btn" onclick="openSchema()" id="schema-btn">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#6B6965"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      <span class="sb-tip" id="schema-tip">View book schema</span>
+    </div>
+  </div>
+
+  <!-- Schema modal -->
+  <div class="schema-ov" id="schema-ov" onclick="closeSchemaOutside(event)">
+    <div class="schema-modal">
+      <div class="schema-mhd">
+        <div>
+          <div class="schema-mhd-title">Book schema</div>
+          <div class="schema-mhd-sub">cosmic-name-tini · v4.2.1 · 12 fields</div>
+        </div>
+        <button class="schema-close" onclick="closeSchema()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="schema-body">
+        <div class="schema-section">
+          <div class="schema-section-label">Personalisation fields</div>
+          <div class="schema-row"><span class="schema-field-name">name</span><span class="schema-field-type">string</span><span class="schema-field-desc">Child's first name</span><span class="schema-req">required</span></div>
+          <div class="schema-row"><span class="schema-field-name">gender</span><span class="schema-field-type">enum</span><span class="schema-field-desc">boy · girl · neutral</span><span class="schema-req">required</span></div>
+          <div class="schema-row"><span class="schema-field-name">phototype</span><span class="schema-field-type">enum</span><span class="schema-field-desc">type-i · type-ii · type-iii · type-iv · type-v</span><span class="schema-req">required</span></div>
+          <div class="schema-row"><span class="schema-field-name">cover_style</span><span class="schema-field-type">enum</span><span class="schema-field-desc">cover-i · cover-ii · cover-iii</span><span class="schema-req">required</span></div>
+          <div class="schema-row"><span class="schema-field-name">locale</span><span class="schema-field-type">enum</span><span class="schema-field-desc">EN-GB · EN-US</span><span class="schema-req">required</span></div>
+          <div class="schema-row"><span class="schema-field-name">inscription</span><span class="schema-field-type">string</span><span class="schema-field-desc">Dedication text (max 120 chars)</span></div>
+          <div class="schema-row"><span class="schema-field-name">star_sign</span><span class="schema-field-type">enum</span><span class="schema-field-desc">aries · taurus · gemini · cancer · leo · virgo…</span></div>
+          <div class="schema-row"><span class="schema-field-name">drink</span><span class="schema-field-type">string</span><span class="schema-field-desc">Favourite drink (URL-encoded, e.g. -tini)</span></div>
+        </div>
+        <div class="schema-section">
+          <div class="schema-section-label">Friends</div>
+          <div class="schema-row"><span class="schema-field-name">friend_1</span><span class="schema-field-type">string</span><span class="schema-field-desc">Friend name 1</span></div>
+          <div class="schema-row"><span class="schema-field-name">friend_2</span><span class="schema-field-type">string</span><span class="schema-field-desc">Friend name 2</span></div>
+          <div class="schema-row"><span class="schema-field-name">friend_3</span><span class="schema-field-type">string</span><span class="schema-field-desc">Friend name 3</span></div>
+          <div class="schema-row"><span class="schema-field-name">friend_4</span><span class="schema-field-type">string</span><span class="schema-field-desc">Friend name 4</span></div>
+        </div>
+        <div class="schema-section">
+          <div class="schema-section-label">Renderer</div>
+          <div class="schema-row"><span class="schema-field-name">base_url</span><span class="schema-field-type">url</span><span class="schema-field-desc">https://mu2-staging.wonderbly.io/product/{slug}/{locale}/wonderbly/{pageId}</span></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="body" style="position:relative;">
@@ -1918,6 +1984,38 @@ function runSharedSuite(i){
     document.getElementById('hcount').textContent=rh.length;
   },1200);
 }
+
+function showToast(msg){
+  const t=document.getElementById('ctst');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function openSchema(){
+  document.getElementById('schema-ov').classList.add('open');
+}
+function closeSchema(){
+  document.getElementById('schema-ov').classList.remove('open');
+}
+function closeSchemaOutside(e){
+  if(e.target===document.getElementById('schema-ov'))closeSchema();
+}
+
+// Position schema tooltip below the button
+(function(){
+  const btn=document.getElementById('schema-btn');
+  const tip=document.getElementById('schema-tip');
+  if(!btn||!tip)return;
+  btn.addEventListener('mouseenter',()=>{
+    const r=btn.getBoundingClientRect();
+    tip.style.left=r.left+(r.width/2)+'px';
+    tip.style.top=(r.bottom+6)+'px';
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape')closeSchema();
+  });
+})();
 
 function closeSaveModal(){
   const m=document.getElementById('save-modal');
