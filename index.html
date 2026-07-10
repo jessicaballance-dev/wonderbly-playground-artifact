@@ -173,6 +173,8 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
 .fb.pr{background:#1C1C1A;border-color:#1C1C1A;color:#fff;}
 .fb.pr:hover{background:#3a3a38;border-color:#3a3a38;}
 .fb:disabled{opacity:0.5;pointer-events:none;}
+.fb.cancel{background:rgba(196,82,114,0.12);border-color:#C45272;color:#C45272;flex:0 0 auto;padding:7px 12px;}
+.fb.cancel:hover{background:rgba(196,82,114,0.22);}
 .run-msg{display:none;align-items:center;gap:5px;font-size:11px;margin-bottom:7px;line-height:1.4;}
 .run-msg.quiet{display:flex;color:var(--tx3);}
 .run-msg.loud{display:flex;color:#C45272;font-weight:500;}
@@ -747,6 +749,7 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
               <div class="run-msg" id="run-msg"></div>
               <div class="br">
                 <button class="fb pr" id="btn-run" onclick="doRun()"><svg class="ic" width="11" height="11"><use href="#ic-play"/></svg> <span id="btn-run-lbl">Run</span></button>
+                <button class="fb cancel" id="btn-cancel" onclick="cancelRun()" style="display:none;">Cancel</button>
                 <button class="fb" id="btn-save-last" onclick="saveFromHistory(0)" style="display:none;flex-shrink:0;"><svg class="ic" width="11" height="11"><use href="#ic-save"/></svg> Save</button>
                 <button class="fb" id="btn-pdf-last" onclick="openPdfPopover(event,this)" style="display:none;flex-shrink:0;"><svg class="ic" width="11" height="11"><use href="#ic-download"/></svg> Full PDF</button>
               </div>
@@ -1990,11 +1993,14 @@ function doRun(){
   const locale=loc.includes('UK')?'EN-GB':'EN-US';
   const btn=document.getElementById('btn-run');btn.disabled=true;
   document.getElementById('btn-save-last').style.display='none';
+  document.getElementById('btn-cancel').style.display='';
   const dot=document.getElementById('run-dot'),lbl=document.getElementById('run-label');
   dot.className='rd run';lbl.textContent='Running…';
   document.querySelectorAll('.pp').forEach(p=>p.style.opacity='0.35');
   renderOvTimer=setTimeout(showRenderOv,500);
-  setTimeout(()=>{
+  runTimeout=setTimeout(()=>{
+    runTimeout=null;
+    document.getElementById('btn-cancel').style.display='none';
     clearTimeout(renderOvTimer);hideRenderOv();
     btn.disabled=false;dot.className='rd done';
     const now=new Date();
@@ -2486,6 +2492,18 @@ window.hideRenderOv=function(){
   if(ov)ov.classList.remove('show');
 };
 let renderOvTimer=null;
+let runTimeout=null;
+function cancelRun(){
+  if(runTimeout){clearTimeout(runTimeout);runTimeout=null;}
+  clearTimeout(renderOvTimer);hideRenderOv();
+  const btn=document.getElementById('btn-run');
+  btn.disabled=false;
+  document.getElementById('btn-cancel').style.display='none';
+  const dot=document.getElementById('run-dot'),lbl=document.getElementById('run-label');
+  dot.className='rd';lbl.textContent='Cancelled';
+  document.querySelectorAll('.pp').forEach(p=>p.style.opacity='1');
+  updateRunBtn();
+}
 updateInlinePreview();
 showBooks();
 </script>
