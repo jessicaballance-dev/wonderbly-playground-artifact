@@ -173,8 +173,8 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
 .fb.pr{background:#1C1C1A;border-color:#1C1C1A;color:#fff;}
 .fb.pr:hover{background:#3a3a38;border-color:#3a3a38;}
 .fb:disabled{opacity:0.5;pointer-events:none;}
-.fb.cancel{background:rgba(196,82,114,0.12);border-color:#C45272;color:#C45272;flex:0 0 auto;padding:7px 12px;}
-.fb.cancel:hover{background:rgba(196,82,114,0.22);}
+.fb.cancel{background:#C45272;border-color:#C45272;color:#fff;flex:0 0 auto;padding:7px 12px;font-weight:500;}
+.fb.cancel:hover{background:#b03d65;border-color:#b03d65;}
 .run-msg{display:none;align-items:center;gap:5px;font-size:11px;margin-bottom:7px;line-height:1.4;}
 .run-msg.quiet{display:flex;color:var(--tx3);}
 .run-msg.loud{display:flex;color:#C45272;font-weight:500;}
