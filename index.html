@@ -345,7 +345,12 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
 .bk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;}
 .bk-card{background:var(--bg);border:0.5px solid var(--bd3);border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:box-shadow 0.15s,transform 0.12s,outline-color 0.15s;outline:2px solid transparent;display:flex;flex-direction:column;}
 .bk-card:hover{box-shadow:0 4px 18px rgba(0,0,0,0.1);transform:translateY(-2px);outline-color:#DFF0EE;}
-.bk-thumb{height:130px;background:#ECEAE3;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;}
+.bk-thumb{height:148px;background:#ECEAE3;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;padding:32px 0 8px;box-sizing:border-box;}
+.bk-cover{border-radius:3px;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,0.10);}
+.bk-cover-ro{width:58px;height:87px;}
+.bk-cover-sq{width:96px;height:96px;}
+.bk-cover-jmb{width:66px;height:90px;}
+.bk-cover-tab{width:70px;height:96px;}
 .bk-fmt-badge{position:absolute;top:8px;left:8px;font-size:8px;font-weight:500;padding:2px 7px;border-radius:20px;background:rgba(255,255,255,0.85);color:var(--tx2);letter-spacing:.02em;}
 .bk-status-badge{position:absolute;top:8px;right:8px;font-size:8px;padding:2px 7px;border-radius:20px;font-weight:500;}
 .bk-status-badge.published{background:rgba(74,53,168,0.12);color:#4A35A8;}
@@ -2409,18 +2414,19 @@ renderH();
 
 // BOOKS VIEW
 const booksData=[
-  {id:'SKU–004',name:'Goodnight Everyone',slug:'good-n1ght-everyone',format:'super-square',status:'draft',lastRun:'18 Jun, 09:14'},
-  {id:'SKU–001',name:'How To Make A Cosmic Name-tini',slug:'how-to-make-a-cosmic-name-tini',format:'royal-octavo',status:'published',lastRun:'12 Jun, 15:30'},
-  {id:'SKU–002',name:'My Hilarious AI Autobiography',slug:'my-hilarious-ai-autobiography',format:'royal-octavo',status:'published',lastRun:'10 Jun, 11:22'},
-  {id:'SKU–003',name:'Our Hilarious AI Romance',slug:'our-hilarious-ai-romance',format:'royal-octavo',status:'published',lastRun:'9 Jun, 16:45'},
-  {id:'SKU–005',name:'Your Officially Amazing Guinness World Records Book',slug:'guinness-world-records',format:'jumbo',status:'published',lastRun:'7 Jun, 14:20'},
-  {id:'SKU–006',name:'You Can Empower Your Life with Louise Hay',slug:'empower-your-life-louise-hay',format:'royal-octavo',status:'draft',lastRun:'5 Jun, 10:11'},
-  {id:'SKU–007',name:"Your College Football Team's History",slug:'college-football-history',format:'tabloid',status:'published',lastRun:'2 Jun, 09:50'},
-  {id:'SKU–008',name:'Your Football Team\'s History US NFL',slug:'football-nfl-history',format:'tabloid',status:'draft',lastRun:'30 May, 13:38'},
-  {id:'SKU–009',name:'Your Football Club\'s History v3',slug:'football-club-history-v3',format:'tabloid',status:'published',lastRun:'28 May, 08:22'},
-  {id:'SKU–010',name:"Test Mummy's Magic Hugs",slug:'test-mummys-magic-hugs',format:'super-square',status:'draft',lastRun:'22 May, 16:01'},
+  {id:'SKU–004',name:'Goodnight Everyone',slug:'good-n1ght-everyone',format:'super-square',status:'draft',lastRun:'18 Jun, 09:14',coverColor:'#D4E8C2'},
+  {id:'SKU–001',name:'How To Make A Cosmic Name-tini',slug:'how-to-make-a-cosmic-name-tini',format:'royal-octavo',status:'published',lastRun:'12 Jun, 15:30',coverColor:'#C8BEE8'},
+  {id:'SKU–002',name:'My Hilarious AI Autobiography',slug:'my-hilarious-ai-autobiography',format:'royal-octavo',status:'published',lastRun:'10 Jun, 11:22',coverColor:'#F5D5B0'},
+  {id:'SKU–003',name:'Our Hilarious AI Romance',slug:'our-hilarious-ai-romance',format:'royal-octavo',status:'published',lastRun:'9 Jun, 16:45',coverColor:'#F2BFCE'},
+  {id:'SKU–005',name:'Your Officially Amazing Guinness World Records Book',slug:'guinness-world-records',format:'jumbo',status:'published',lastRun:'7 Jun, 14:20',coverColor:'#B8D8C8'},
+  {id:'SKU–006',name:'You Can Empower Your Life with Louise Hay',slug:'empower-your-life-louise-hay',format:'royal-octavo',status:'draft',lastRun:'5 Jun, 10:11',coverColor:null},
+  {id:'SKU–007',name:"Your College Football Team's History",slug:'college-football-history',format:'tabloid',status:'published',lastRun:'2 Jun, 09:50',coverColor:'#B4D0EC'},
+  {id:'SKU–008',name:'Your Football Team\'s History US NFL',slug:'football-nfl-history',format:'tabloid',status:'draft',lastRun:'30 May, 13:38',coverColor:null},
+  {id:'SKU–009',name:'Your Football Club\'s History v3',slug:'football-club-history-v3',format:'tabloid',status:'published',lastRun:'28 May, 08:22',coverColor:'#A8D8D4'},
+  {id:'SKU–010',name:"Test Mummy's Magic Hugs",slug:'test-mummys-magic-hugs',format:'super-square',status:'draft',lastRun:'22 May, 16:01',coverColor:'#F5C8D8'},
 ];
 const fmtLabel={'royal-octavo':'Royal Octavo','tabloid':'Tabloid','super-square':'Super Square','jumbo':'Jumbo'};
+const fmtCoverClass={'royal-octavo':'bk-cover-ro','super-square':'bk-cover-sq','jumbo':'bk-cover-jmb','tabloid':'bk-cover-tab'};
 function renderBkGrid(){
   const q=(document.getElementById('bv-search')?.value||'').toLowerCase();
   const fmtF=document.getElementById('bv-fmt')?.value||'all';
@@ -2438,7 +2444,9 @@ function renderBkGrid(){
   if(!items.length){grid.innerHTML='<div style="grid-column:1/-1;padding:40px;text-align:center;font-size:12px;color:var(--tx3);">No books match.</div>';return;}
   grid.innerHTML=items.map(b=>`<div class="bk-card" onclick="openBook('${b.id}')">
     <div class="bk-thumb">
-      <svg width="32" height="32" style="color:#C9C7C0"><use href="#ic-book2"/></svg>
+      ${b.coverColor
+        ? `<div class="bk-cover ${fmtCoverClass[b.format]||''}" style="background:${b.coverColor}"></div>`
+        : `<svg width="32" height="32" style="color:#C9C7C0"><use href="#ic-book2"/></svg>`}
       <span class="bk-fmt-badge">${fmtLabel[b.format]||b.format}</span>
       <span class="bk-status-badge ${b.status}">${b.status==='published'?'Published':'Draft'}</span>
     </div>
