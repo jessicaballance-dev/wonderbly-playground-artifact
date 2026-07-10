@@ -167,6 +167,24 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
 .mf-sa-btn.on{color:var(--tx);font-weight:500;}
 .mf-sa-btn.dim{color:var(--tx3);opacity:0.5;}
 .mf-sep{height:0.5px;background:var(--bd3);margin:2px 10px;}
+#rs-panel{width:224px;}
+.rs-panel-hd{display:flex;align-items:center;justify-content:space-between;padding:9px 10px 7px;border-bottom:0.5px solid var(--bd3);}
+.rs-panel-title{font-size:12px;font-weight:500;color:var(--tx);}
+.rs-panel-count{font-size:11px;color:var(--tx3);}
+.rs-search{padding:6px 8px;border-bottom:0.5px solid var(--bd3);}
+.rs-search input{width:100%;background:var(--bg2);border:0.5px solid var(--bd2);border-radius:6px;padding:6px 10px;font-size:12px;font-family:var(--sans);color:var(--tx);outline:none;box-sizing:border-box;}
+.rs-search input::placeholder{color:var(--bd);}
+.rs-pills{padding:8px;display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto;}
+.rs-pill{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;border:0.5px solid var(--bd2);background:var(--bg);cursor:pointer;}
+.rs-pill:hover{background:var(--bg2);}
+.rs-pill.chk{background:#EEF7F5;border-color:#7BBDB8;}
+.rs-pill.chk .rs-ck{background:#2D8A83;border-color:#2D8A83;}
+.rs-pill.chk .rs-pill-lbl{color:#1E5751;font-weight:500;}
+.rs-ck{width:14px;height:14px;border-radius:3px;border:0.5px solid var(--bd2);background:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rs-pill-lbl{font-size:11px;color:var(--tx);}
+.rs-pill-ft{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-top:0.5px solid var(--bd3);}
+.rs-ft-lnk{font-size:10px;color:var(--tx2);cursor:pointer;background:none;border:none;font-family:var(--sans);padding:0;user-select:none;}
+.rs-ft-lnk:hover{color:var(--tx);}
 .br{display:flex;gap:6px;}
 .fb{flex:1;padding:7px;border:0.5px solid var(--bd2);border-radius:var(--rm);font-size:11px;font-family:var(--sans);background:var(--bg);color:var(--tx);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;}
 .fb:hover{background:var(--bg2);}
@@ -732,16 +750,21 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
                   <span id="rs-trig-lbl">All pages</span>
                   <svg class="ic" width="9" height="9"><use href="#ic-chev-r"/></svg>
                   <div class="mf-panel up" id="rs-panel">
+                    <div class="rs-panel-hd">
+                      <span class="rs-panel-title">Select pages</span>
+                      <span class="rs-panel-count" id="rs-hd-count"></span>
+                    </div>
                     <div class="mf-mode">
                       <button class="mf-mb on" id="rs-mb-pages" onclick="setRsMode(event,'pages')">Pages</button>
                       <button class="mf-mb" id="rs-mb-spreads" onclick="setRsMode(event,'spreads')">Spreads</button>
                     </div>
-                    <div class="mf-rows">
-                      <div id="rs-item-rows"></div>
+                    <div class="rs-search">
+                      <input type="text" id="rs-search-input" placeholder="Filter pages…" oninput="renderRsDrop()" onclick="event.stopPropagation()"/>
                     </div>
-                    <div class="mf-ft">
-                      <span class="mf-sa-btn on" id="rs-sa-btn" onclick="selectAllRs(event)">Select all</span>
-                      <span class="mf-sa-btn dim" id="rs-da-btn" onclick="clearRs(event)">Clear</span>
+                    <div class="rs-pills" id="rs-item-rows"></div>
+                    <div class="rs-pill-ft">
+                      <span class="rs-ft-lnk" id="rs-sa-btn" onclick="selectAllRs(event)">Select all</span>
+                      <span class="rs-ft-lnk" id="rs-da-btn" onclick="clearRs(event)">Deselect all</span>
                     </div>
                   </div>
                 </div>
@@ -920,20 +943,21 @@ function getRsLabel(){
 }
 function renderRsDrop(){
   const items=rsItems();
+  const searchInput=document.getElementById('rs-search-input');
+  const query=(searchInput?.value||'').toLowerCase();
+  const filtered=query?items.filter(it=>it.label.toLowerCase().includes(query)):items;
   const rows=document.getElementById('rs-item-rows');if(!rows)return;
-  rows.innerHTML=items.map(it=>`<div class="mf-row${rsSelected.has(it.id)?' chk':''}" onclick="toggleRsItem(event,'${it.id}')"><div class="mf-ck">${rsSelected.has(it.id)?'<svg style="width:8px;height:8px"><use href="#ic-check"/></svg>':''}</div><span>${it.label}</span></div>`).join('');
+  rows.innerHTML=filtered.map(it=>`<div class="rs-pill${rsSelected.has(it.id)?' chk':''}" onclick="toggleRsItem(event,'${it.id}')"><div class="rs-ck">${rsSelected.has(it.id)?'<svg width="8" height="8" viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,5 4.2,7.5 8,3"/></svg>':''}</div><span class="rs-pill-lbl">${it.label}</span></div>`).join('');
   const lbl=document.getElementById('rs-trig-lbl');if(lbl)lbl.textContent=getRsLabel();
-  const saBtn=document.getElementById('rs-sa-btn');const daBtn=document.getElementById('rs-da-btn');
-  const allSel=rsSelected.size===items.length,noneSel=rsSelected.size===0;
-  if(saBtn)saBtn.className='mf-sa-btn'+(allSel?' on':noneSel?' dim':'');
-  if(daBtn)daBtn.className='mf-sa-btn'+(noneSel?' on':allSel?' dim':'');
+  const count=document.getElementById('rs-hd-count');
+  if(count){const n=rsSelected.size,tot=items.length;count.textContent=n===tot?'All selected':`${n} of ${tot} selected`;}
   const trig=document.getElementById('rs-trig');if(trig)trig.classList.toggle('active',rsSelected.size>0&&rsSelected.size<items.length);
   const sp=document.getElementById('rs-mb-spreads');const pg=document.getElementById('rs-mb-pages');
   if(sp)sp.className='mf-mb'+(rsMode==='spreads'?' on':'');
   if(pg)pg.className='mf-mb'+(rsMode==='pages'?' on':'');
 }
 function toggleRsDrop(e){e.stopPropagation();rsDropOpen=!rsDropOpen;const p=document.getElementById('rs-panel');if(p)p.classList.toggle('open',rsDropOpen);if(rsDropOpen)renderRsDrop();}
-function setRsMode(e,m){e.stopPropagation();if(rsMode===m)return;rsMode=m;rsSelected.clear();renderRsDrop();}
+function setRsMode(e,m){e.stopPropagation();if(rsMode===m)return;rsMode=m;rsSelected.clear();const si=document.getElementById('rs-search-input');if(si)si.value='';renderRsDrop();}
 function toggleRsItem(e,id){e.stopPropagation();if(rsSelected.has(id))rsSelected.delete(id);else rsSelected.add(id);renderRsDrop();}
 function toggleRsAll(e){e.stopPropagation();if(rsSelected.size===rsItems().length)rsSelected.clear();else rsItems().forEach(i=>rsSelected.add(i.id));renderRsDrop();}
 function clearRs(e){e.stopPropagation();rsSelected.clear();renderRsDrop();}
