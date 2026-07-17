@@ -778,8 +778,8 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
               <div class="br">
                 <button class="fb pr" id="btn-run" onclick="doRun()"><svg class="ic" width="11" height="11"><use href="#ic-play"/></svg> <span id="btn-run-lbl">Run</span></button>
                 <button class="fb cancel" id="btn-cancel" onclick="cancelRun()" style="display:none;">Cancel</button>
-                <button class="fb" id="btn-save-last" onclick="saveFromHistory(0)" style="display:none;flex-shrink:0;"><svg class="ic" width="11" height="11"><use href="#ic-save"/></svg> Save</button>
-                <button class="fb" id="btn-pdf-last" onclick="openPdfPopover(event,this)" style="display:none;flex-shrink:0;"><span id="btn-pdf-inner"><svg class="ic" width="11" height="11"><use href="#ic-download"/></svg> Full PDF</span></button>
+                <button class="fb" id="btn-save-last" onclick="saveFromHistory(0)" style="flex-shrink:0;"><svg class="ic" width="11" height="11"><use href="#ic-save"/></svg> Save</button>
+                <button class="fb" id="btn-pdf-last" onclick="openPdfPopover(event,this)" style="flex-shrink:0;"><span id="btn-pdf-inner"><svg class="ic" width="11" height="11"><use href="#ic-download"/></svg> Full PDF</span></button>
               </div>
             </div>
           </div>
@@ -1635,7 +1635,7 @@ const tps={
 // CHIPS + TABS
 function solo(chip,gid){document.querySelectorAll('#'+gid+' .chip').forEach(c=>c.classList.remove('sel'));chip.classList.add('sel');updateRunBtn();}
 let activeTab='fields';
-let runCompleted=false;
+let runCompleted=true;
 function switchTab(tab){
   // Save current rs state to the outgoing tab's snapshot
   if(activeTab==='fields')fieldsRsSnap={mode:rsMode,sel:new Set(rsSelected)};
