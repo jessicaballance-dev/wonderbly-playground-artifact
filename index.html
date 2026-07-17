@@ -193,6 +193,11 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
 .fb:disabled{opacity:0.5;pointer-events:none;}
 .fb.cancel{background:#C45272;border-color:#C45272;color:#fff;flex:0 0 auto;padding:7px 12px;font-weight:500;}
 .fb.cancel:hover{background:#b03d65;border-color:#b03d65;}
+.fb.pdf-gen{border-color:#2D8A83;color:#2D8A83;position:relative;overflow:hidden;}
+.fb.pdf-gen::after{content:'';position:absolute;top:0;left:-70%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(45,138,131,.18),transparent);animation:pdf-sweep 1.5s ease-in-out infinite;}
+@keyframes pdf-sweep{0%{left:-70%}100%{left:140%}}
+.fb.pdf-ready{background:#2D8A83;border-color:#2D8A83;color:#fff;font-weight:500;}
+.fb.pdf-ready:hover{background:#267870;border-color:#267870;}
 .run-msg{display:none;align-items:center;gap:5px;font-size:11px;margin-bottom:7px;line-height:1.4;}
 .run-msg.quiet{display:flex;color:var(--tx3);}
 .run-msg.loud{display:flex;color:#C45272;font-weight:500;}
@@ -774,7 +779,7 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
                 <button class="fb pr" id="btn-run" onclick="doRun()"><svg class="ic" width="11" height="11"><use href="#ic-play"/></svg> <span id="btn-run-lbl">Run</span></button>
                 <button class="fb cancel" id="btn-cancel" onclick="cancelRun()" style="display:none;">Cancel</button>
                 <button class="fb" id="btn-save-last" onclick="saveFromHistory(0)" style="display:none;flex-shrink:0;"><svg class="ic" width="11" height="11"><use href="#ic-save"/></svg> Save</button>
-                <button class="fb" id="btn-pdf-last" onclick="openPdfPopover(event,this)" style="display:none;flex-shrink:0;"><svg class="ic" width="11" height="11"><use href="#ic-download"/></svg> Full PDF</button>
+                <button class="fb" id="btn-pdf-last" onclick="openPdfPopover(event,this)" style="display:none;flex-shrink:0;"><span id="btn-pdf-inner"><svg class="ic" width="11" height="11"><use href="#ic-download"/></svg> Full PDF</span></button>
               </div>
             </div>
           </div>
@@ -2018,6 +2023,7 @@ function doRun(){
   const btn=document.getElementById('btn-run');btn.disabled=true;
   document.getElementById('btn-save-last').style.display='none';
   document.getElementById('btn-cancel').style.display='';
+  setPdfBtnState('idle');
   const dot=document.getElementById('run-dot'),lbl=document.getElementById('run-label');
   dot.className='rd run';lbl.textContent='Running…';
   document.querySelectorAll('.pp').forEach(p=>p.style.opacity='0.35');
@@ -2300,6 +2306,23 @@ function showToast(msg){
 // PDF popover
 let pdfPopOpen=false;
 let pdfGenTimers=[];
+let pdfBtnState='idle'; // 'idle'|'generating'|'ready'
+function setPdfBtnState(state){
+  pdfBtnState=state;
+  const btn=document.getElementById('btn-pdf-last');
+  const inner=document.getElementById('btn-pdf-inner');
+  if(!btn||!inner)return;
+  if(state==='generating'){
+    btn.className='fb pdf-gen';
+    inner.innerHTML='Generating…';
+  } else if(state==='ready'){
+    btn.className='fb pdf-ready';
+    inner.innerHTML='<svg class="ic" width="11" height="11"><use href="#ic-download"/></svg> PDF ready';
+  } else {
+    btn.className='fb';
+    inner.innerHTML='<svg class="ic" width="11" height="11"><use href="#ic-download"/></svg> Full PDF';
+  }
+}
 function rndRenderTime(min,max){return(Math.random()*(max-min)+min).toFixed(1);}
 function renderTimeColor(s){const n=parseFloat(s);return n<2?'#1E5751':n<6?'#D4922A':'#C45272';}
 
@@ -2311,15 +2334,31 @@ function openPdfPopover(e,btn){
   pdfGenTimers.forEach(clearTimeout);pdfGenTimers=[];
   pdfPopOpen=true;
   pop._triggerBtn=btn;
-  // Reset to generating state
-  document.getElementById('pdf-dot').className='pdf-dot generating';
-  document.getElementById('pdf-status-lbl').textContent='Generating PDFs…';
-  document.getElementById('pdf-time-cover').innerHTML='<div class="pdf-spinner"></div><span style="color:var(--tx3)">Generating…</span>';
-  document.getElementById('pdf-time-inside').innerHTML='<div class="pdf-spinner"></div><span style="color:var(--tx3)">Generating…</span>';
-  document.getElementById('pdf-dl-cover').className='pdf-dl-btn';
-  document.getElementById('pdf-dl-inside').className='pdf-dl-btn';
-  document.getElementById('pdf-regen-btn').style.opacity='0.35';
-  document.getElementById('pdf-regen-btn').style.pointerEvents='none';
+  const isMainBtn=(btn.id==='btn-pdf-last');
+  const alreadyReady=(isMainBtn&&pdfBtnState==='ready');
+  // Set button to generating state if this is the first click
+  if(isMainBtn&&pdfBtnState==='idle') setPdfBtnState('generating');
+  if(alreadyReady){
+    // Popover opens straight to ready state — no re-generation
+    document.getElementById('pdf-dot').className='pdf-dot ready';
+    document.getElementById('pdf-status-lbl').textContent='Ready to download';
+    document.getElementById('pdf-time-cover').innerHTML='<span style="color:#1E5751">Ready</span>';
+    document.getElementById('pdf-time-inside').innerHTML='<span style="color:#1E5751">Ready</span>';
+    document.getElementById('pdf-dl-cover').className='pdf-dl-btn ready';
+    document.getElementById('pdf-dl-inside').className='pdf-dl-btn ready';
+    document.getElementById('pdf-regen-btn').style.opacity='1';
+    document.getElementById('pdf-regen-btn').style.pointerEvents='auto';
+  } else {
+    // Reset to generating state
+    document.getElementById('pdf-dot').className='pdf-dot generating';
+    document.getElementById('pdf-status-lbl').textContent='Generating PDFs…';
+    document.getElementById('pdf-time-cover').innerHTML='<div class="pdf-spinner"></div><span style="color:var(--tx3)">Generating…</span>';
+    document.getElementById('pdf-time-inside').innerHTML='<div class="pdf-spinner"></div><span style="color:var(--tx3)">Generating…</span>';
+    document.getElementById('pdf-dl-cover').className='pdf-dl-btn';
+    document.getElementById('pdf-dl-inside').className='pdf-dl-btn';
+    document.getElementById('pdf-regen-btn').style.opacity='0.35';
+    document.getElementById('pdf-regen-btn').style.pointerEvents='none';
+  }
   // Position using getBoundingClientRect
   const r=btn.getBoundingClientRect();
   const popW=264,popH=210;
@@ -2335,21 +2374,24 @@ function openPdfPopover(e,btn){
   pop.style.left=Math.max(8,leftPos)+'px';
   pop.style.right='auto';
   pop.classList.add('open');
-  // Staggered generation: cover ready after ~1.5s, inside after ~2.5s
-  const coverS=rndRenderTime(0.8,5.5);
-  const insideS=rndRenderTime(2.0,8.5);
-  pdfGenTimers.push(setTimeout(()=>{
-    document.getElementById('pdf-time-cover').innerHTML='<span style="color:'+renderTimeColor(coverS)+'">Rendered in '+coverS+'s</span>';
-    document.getElementById('pdf-dl-cover').className='pdf-dl-btn ready';
-  },1500));
-  pdfGenTimers.push(setTimeout(()=>{
-    document.getElementById('pdf-time-inside').innerHTML='<span style="color:'+renderTimeColor(insideS)+'">Rendered in '+insideS+'s</span>';
-    document.getElementById('pdf-dl-inside').className='pdf-dl-btn ready';
-    document.getElementById('pdf-dot').className='pdf-dot ready';
-    document.getElementById('pdf-status-lbl').textContent='Ready to download';
-    document.getElementById('pdf-regen-btn').style.opacity='1';
-    document.getElementById('pdf-regen-btn').style.pointerEvents='auto';
-  },2600));
+  if(!alreadyReady){
+    // Staggered generation: cover ready after ~1.5s, inside after ~2.5s
+    const coverS=rndRenderTime(0.8,5.5);
+    const insideS=rndRenderTime(2.0,8.5);
+    pdfGenTimers.push(setTimeout(()=>{
+      document.getElementById('pdf-time-cover').innerHTML='<span style="color:'+renderTimeColor(coverS)+'">Rendered in '+coverS+'s</span>';
+      document.getElementById('pdf-dl-cover').className='pdf-dl-btn ready';
+    },1500));
+    pdfGenTimers.push(setTimeout(()=>{
+      document.getElementById('pdf-time-inside').innerHTML='<span style="color:'+renderTimeColor(insideS)+'">Rendered in '+insideS+'s</span>';
+      document.getElementById('pdf-dl-inside').className='pdf-dl-btn ready';
+      document.getElementById('pdf-dot').className='pdf-dot ready';
+      document.getElementById('pdf-status-lbl').textContent='Ready to download';
+      document.getElementById('pdf-regen-btn').style.opacity='1';
+      document.getElementById('pdf-regen-btn').style.pointerEvents='auto';
+      if(isMainBtn) setPdfBtnState('ready');
+    },2600));
+  }
 }
 function closePdfPopover(){
   pdfPopOpen=false;
@@ -2358,7 +2400,10 @@ function closePdfPopover(){
 function regenPdf(){
   const pop=document.getElementById('pdf-pop');
   const btn=pop._triggerBtn;
-  if(btn)openPdfPopover({stopPropagation:()=>{}},btn);
+  if(!btn)return;
+  // Reset state so regeneration runs fresh
+  if(btn.id==='btn-pdf-last') setPdfBtnState('idle');
+  openPdfPopover({stopPropagation:()=>{}},btn);
 }
 document.addEventListener('click',e=>{
   if(pdfPopOpen&&!document.getElementById('pdf-pop').contains(e.target))closePdfPopover();
