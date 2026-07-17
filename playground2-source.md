@@ -167,6 +167,24 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
 .mf-sa-btn.on{color:var(--tx);font-weight:500;}
 .mf-sa-btn.dim{color:var(--tx3);opacity:0.5;}
 .mf-sep{height:0.5px;background:var(--bd3);margin:2px 10px;}
+#rs-panel{width:224px;}
+.rs-panel-hd{display:flex;align-items:center;justify-content:space-between;padding:9px 10px 7px;border-bottom:0.5px solid var(--bd3);}
+.rs-panel-title{font-size:12px;font-weight:500;color:var(--tx);}
+.rs-panel-count{font-size:11px;color:var(--tx3);}
+.rs-search{padding:6px 8px;border-bottom:0.5px solid var(--bd3);}
+.rs-search input{width:100%;background:var(--bg2);border:0.5px solid var(--bd2);border-radius:6px;padding:6px 10px;font-size:12px;font-family:var(--sans);color:var(--tx);outline:none;box-sizing:border-box;}
+.rs-search input::placeholder{color:var(--bd);}
+.rs-pills{padding:8px;display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto;}
+.rs-pill{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;border:0.5px solid var(--bd2);background:var(--bg);cursor:pointer;}
+.rs-pill:hover{background:var(--bg2);}
+.rs-pill.chk{background:#EEF7F5;border-color:#7BBDB8;}
+.rs-pill.chk .rs-ck{background:#2D8A83;border-color:#2D8A83;}
+.rs-pill.chk .rs-pill-lbl{color:#1E5751;font-weight:500;}
+.rs-ck{width:14px;height:14px;border-radius:3px;border:0.5px solid var(--bd2);background:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rs-pill-lbl{font-size:11px;color:var(--tx);}
+.rs-pill-ft{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-top:0.5px solid var(--bd3);}
+.rs-ft-lnk{font-size:10px;color:var(--tx2);cursor:pointer;background:none;border:none;font-family:var(--sans);padding:0;user-select:none;}
+.rs-ft-lnk:hover{color:var(--tx);}
 .br{display:flex;gap:6px;}
 .fb{flex:1;padding:7px;border:0.5px solid var(--bd2);border-radius:var(--rm);font-size:11px;font-family:var(--sans);background:var(--bg);color:var(--tx);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;}
 .fb:hover{background:var(--bg2);}
@@ -175,6 +193,11 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
 .fb:disabled{opacity:0.5;pointer-events:none;}
 .fb.cancel{background:#C45272;border-color:#C45272;color:#fff;flex:0 0 auto;padding:7px 12px;font-weight:500;}
 .fb.cancel:hover{background:#b03d65;border-color:#b03d65;}
+.fb.pdf-gen{border-color:#2D8A83;color:#2D8A83;position:relative;overflow:hidden;}
+.fb.pdf-gen::after{content:'';position:absolute;top:0;left:-70%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(45,138,131,.18),transparent);animation:pdf-sweep 1.5s ease-in-out infinite;}
+@keyframes pdf-sweep{0%{left:-70%}100%{left:140%}}
+.fb.pdf-ready{background:#2D8A83;border-color:#2D8A83;color:#fff;font-weight:500;}
+.fb.pdf-ready:hover{background:#267870;border-color:#267870;}
 .run-msg{display:none;align-items:center;gap:5px;font-size:11px;margin-bottom:7px;line-height:1.4;}
 .run-msg.quiet{display:flex;color:var(--tx3);}
 .run-msg.loud{display:flex;color:#C45272;font-weight:500;}
@@ -732,16 +755,21 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
                   <span id="rs-trig-lbl">All pages</span>
                   <svg class="ic" width="9" height="9"><use href="#ic-chev-r"/></svg>
                   <div class="mf-panel up" id="rs-panel">
+                    <div class="rs-panel-hd">
+                      <span class="rs-panel-title">Select pages</span>
+                      <span class="rs-panel-count" id="rs-hd-count"></span>
+                    </div>
                     <div class="mf-mode">
                       <button class="mf-mb on" id="rs-mb-pages" onclick="setRsMode(event,'pages')">Pages</button>
                       <button class="mf-mb" id="rs-mb-spreads" onclick="setRsMode(event,'spreads')">Spreads</button>
                     </div>
-                    <div class="mf-rows">
-                      <div id="rs-item-rows"></div>
+                    <div class="rs-search">
+                      <input type="text" id="rs-search-input" placeholder="Filter pages…" oninput="renderRsDrop()" onclick="event.stopPropagation()"/>
                     </div>
-                    <div class="mf-ft">
-                      <span class="mf-sa-btn on" id="rs-sa-btn" onclick="selectAllRs(event)">Select all</span>
-                      <span class="mf-sa-btn dim" id="rs-da-btn" onclick="clearRs(event)">Clear</span>
+                    <div class="rs-pills" id="rs-item-rows"></div>
+                    <div class="rs-pill-ft">
+                      <span class="rs-ft-lnk" id="rs-sa-btn" onclick="selectAllRs(event)">Select all</span>
+                      <span class="rs-ft-lnk" id="rs-da-btn" onclick="clearRs(event)">Deselect all</span>
                     </div>
                   </div>
                 </div>
@@ -751,7 +779,7 @@ svg.ic{display:inline-block;vertical-align:middle;flex-shrink:0;}
                 <button class="fb pr" id="btn-run" onclick="doRun()"><svg class="ic" width="11" height="11"><use href="#ic-play"/></svg> <span id="btn-run-lbl">Run</span></button>
                 <button class="fb cancel" id="btn-cancel" onclick="cancelRun()" style="display:none;">Cancel</button>
                 <button class="fb" id="btn-save-last" onclick="saveFromHistory(0)" style="display:none;flex-shrink:0;"><svg class="ic" width="11" height="11"><use href="#ic-save"/></svg> Save</button>
-                <button class="fb" id="btn-pdf-last" onclick="openPdfPopover(event,this)" style="display:none;flex-shrink:0;"><svg class="ic" width="11" height="11"><use href="#ic-download"/></svg> Full PDF</button>
+                <button class="fb" id="btn-pdf-last" onclick="openPdfPopover(event,this)" style="display:none;flex-shrink:0;"><span id="btn-pdf-inner"><svg class="ic" width="11" height="11"><use href="#ic-download"/></svg> Full PDF</span></button>
               </div>
             </div>
           </div>
@@ -920,20 +948,21 @@ function getRsLabel(){
 }
 function renderRsDrop(){
   const items=rsItems();
+  const searchInput=document.getElementById('rs-search-input');
+  const query=(searchInput?.value||'').toLowerCase();
+  const filtered=query?items.filter(it=>it.label.toLowerCase().includes(query)):items;
   const rows=document.getElementById('rs-item-rows');if(!rows)return;
-  rows.innerHTML=items.map(it=>`<div class="mf-row${rsSelected.has(it.id)?' chk':''}" onclick="toggleRsItem(event,'${it.id}')"><div class="mf-ck">${rsSelected.has(it.id)?'<svg style="width:8px;height:8px"><use href="#ic-check"/></svg>':''}</div><span>${it.label}</span></div>`).join('');
+  rows.innerHTML=filtered.map(it=>`<div class="rs-pill${rsSelected.has(it.id)?' chk':''}" onclick="toggleRsItem(event,'${it.id}')"><div class="rs-ck">${rsSelected.has(it.id)?'<svg width="8" height="8" viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,5 4.2,7.5 8,3"/></svg>':''}</div><span class="rs-pill-lbl">${it.label}</span></div>`).join('');
   const lbl=document.getElementById('rs-trig-lbl');if(lbl)lbl.textContent=getRsLabel();
-  const saBtn=document.getElementById('rs-sa-btn');const daBtn=document.getElementById('rs-da-btn');
-  const allSel=rsSelected.size===items.length,noneSel=rsSelected.size===0;
-  if(saBtn)saBtn.className='mf-sa-btn'+(allSel?' on':noneSel?' dim':'');
-  if(daBtn)daBtn.className='mf-sa-btn'+(noneSel?' on':allSel?' dim':'');
+  const count=document.getElementById('rs-hd-count');
+  if(count){const n=rsSelected.size,tot=items.length;count.textContent=n===tot?'All selected':`${n} of ${tot} selected`;}
   const trig=document.getElementById('rs-trig');if(trig)trig.classList.toggle('active',rsSelected.size>0&&rsSelected.size<items.length);
   const sp=document.getElementById('rs-mb-spreads');const pg=document.getElementById('rs-mb-pages');
   if(sp)sp.className='mf-mb'+(rsMode==='spreads'?' on':'');
   if(pg)pg.className='mf-mb'+(rsMode==='pages'?' on':'');
 }
 function toggleRsDrop(e){e.stopPropagation();rsDropOpen=!rsDropOpen;const p=document.getElementById('rs-panel');if(p)p.classList.toggle('open',rsDropOpen);if(rsDropOpen)renderRsDrop();}
-function setRsMode(e,m){e.stopPropagation();if(rsMode===m)return;rsMode=m;rsSelected.clear();renderRsDrop();}
+function setRsMode(e,m){e.stopPropagation();if(rsMode===m)return;rsMode=m;rsSelected.clear();const si=document.getElementById('rs-search-input');if(si)si.value='';renderRsDrop();}
 function toggleRsItem(e,id){e.stopPropagation();if(rsSelected.has(id))rsSelected.delete(id);else rsSelected.add(id);renderRsDrop();}
 function toggleRsAll(e){e.stopPropagation();if(rsSelected.size===rsItems().length)rsSelected.clear();else rsItems().forEach(i=>rsSelected.add(i.id));renderRsDrop();}
 function clearRs(e){e.stopPropagation();rsSelected.clear();renderRsDrop();}
@@ -1994,6 +2023,7 @@ function doRun(){
   const btn=document.getElementById('btn-run');btn.disabled=true;
   document.getElementById('btn-save-last').style.display='none';
   document.getElementById('btn-cancel').style.display='';
+  setPdfBtnState('idle');
   const dot=document.getElementById('run-dot'),lbl=document.getElementById('run-label');
   dot.className='rd run';lbl.textContent='Running…';
   document.querySelectorAll('.pp').forEach(p=>p.style.opacity='0.35');
@@ -2276,6 +2306,23 @@ function showToast(msg){
 // PDF popover
 let pdfPopOpen=false;
 let pdfGenTimers=[];
+let pdfBtnState='idle'; // 'idle'|'generating'|'ready'
+function setPdfBtnState(state){
+  pdfBtnState=state;
+  const btn=document.getElementById('btn-pdf-last');
+  const inner=document.getElementById('btn-pdf-inner');
+  if(!btn||!inner)return;
+  if(state==='generating'){
+    btn.className='fb pdf-gen';
+    inner.innerHTML='Generating…';
+  } else if(state==='ready'){
+    btn.className='fb pdf-ready';
+    inner.innerHTML='<svg class="ic" width="11" height="11"><use href="#ic-download"/></svg> PDF ready';
+  } else {
+    btn.className='fb';
+    inner.innerHTML='<svg class="ic" width="11" height="11"><use href="#ic-download"/></svg> Full PDF';
+  }
+}
 function rndRenderTime(min,max){return(Math.random()*(max-min)+min).toFixed(1);}
 function renderTimeColor(s){const n=parseFloat(s);return n<2?'#1E5751':n<6?'#D4922A':'#C45272';}
 
@@ -2287,15 +2334,31 @@ function openPdfPopover(e,btn){
   pdfGenTimers.forEach(clearTimeout);pdfGenTimers=[];
   pdfPopOpen=true;
   pop._triggerBtn=btn;
-  // Reset to generating state
-  document.getElementById('pdf-dot').className='pdf-dot generating';
-  document.getElementById('pdf-status-lbl').textContent='Generating PDFs…';
-  document.getElementById('pdf-time-cover').innerHTML='<div class="pdf-spinner"></div><span style="color:var(--tx3)">Generating…</span>';
-  document.getElementById('pdf-time-inside').innerHTML='<div class="pdf-spinner"></div><span style="color:var(--tx3)">Generating…</span>';
-  document.getElementById('pdf-dl-cover').className='pdf-dl-btn';
-  document.getElementById('pdf-dl-inside').className='pdf-dl-btn';
-  document.getElementById('pdf-regen-btn').style.opacity='0.35';
-  document.getElementById('pdf-regen-btn').style.pointerEvents='none';
+  const isMainBtn=(btn.id==='btn-pdf-last');
+  const alreadyReady=(isMainBtn&&pdfBtnState==='ready');
+  // Set button to generating state if this is the first click
+  if(isMainBtn&&pdfBtnState==='idle') setPdfBtnState('generating');
+  if(alreadyReady){
+    // Popover opens straight to ready state — no re-generation
+    document.getElementById('pdf-dot').className='pdf-dot ready';
+    document.getElementById('pdf-status-lbl').textContent='Ready to download';
+    document.getElementById('pdf-time-cover').innerHTML='<span style="color:#1E5751">Ready</span>';
+    document.getElementById('pdf-time-inside').innerHTML='<span style="color:#1E5751">Ready</span>';
+    document.getElementById('pdf-dl-cover').className='pdf-dl-btn ready';
+    document.getElementById('pdf-dl-inside').className='pdf-dl-btn ready';
+    document.getElementById('pdf-regen-btn').style.opacity='1';
+    document.getElementById('pdf-regen-btn').style.pointerEvents='auto';
+  } else {
+    // Reset to generating state
+    document.getElementById('pdf-dot').className='pdf-dot generating';
+    document.getElementById('pdf-status-lbl').textContent='Generating PDFs…';
+    document.getElementById('pdf-time-cover').innerHTML='<div class="pdf-spinner"></div><span style="color:var(--tx3)">Generating…</span>';
+    document.getElementById('pdf-time-inside').innerHTML='<div class="pdf-spinner"></div><span style="color:var(--tx3)">Generating…</span>';
+    document.getElementById('pdf-dl-cover').className='pdf-dl-btn';
+    document.getElementById('pdf-dl-inside').className='pdf-dl-btn';
+    document.getElementById('pdf-regen-btn').style.opacity='0.35';
+    document.getElementById('pdf-regen-btn').style.pointerEvents='none';
+  }
   // Position using getBoundingClientRect
   const r=btn.getBoundingClientRect();
   const popW=264,popH=210;
@@ -2311,21 +2374,24 @@ function openPdfPopover(e,btn){
   pop.style.left=Math.max(8,leftPos)+'px';
   pop.style.right='auto';
   pop.classList.add('open');
-  // Staggered generation: cover ready after ~1.5s, inside after ~2.5s
-  const coverS=rndRenderTime(0.8,5.5);
-  const insideS=rndRenderTime(2.0,8.5);
-  pdfGenTimers.push(setTimeout(()=>{
-    document.getElementById('pdf-time-cover').innerHTML='<span style="color:'+renderTimeColor(coverS)+'">Rendered in '+coverS+'s</span>';
-    document.getElementById('pdf-dl-cover').className='pdf-dl-btn ready';
-  },1500));
-  pdfGenTimers.push(setTimeout(()=>{
-    document.getElementById('pdf-time-inside').innerHTML='<span style="color:'+renderTimeColor(insideS)+'">Rendered in '+insideS+'s</span>';
-    document.getElementById('pdf-dl-inside').className='pdf-dl-btn ready';
-    document.getElementById('pdf-dot').className='pdf-dot ready';
-    document.getElementById('pdf-status-lbl').textContent='Ready to download';
-    document.getElementById('pdf-regen-btn').style.opacity='1';
-    document.getElementById('pdf-regen-btn').style.pointerEvents='auto';
-  },2600));
+  if(!alreadyReady){
+    // Staggered generation: cover ready after ~1.5s, inside after ~2.5s
+    const coverS=rndRenderTime(0.8,5.5);
+    const insideS=rndRenderTime(2.0,8.5);
+    pdfGenTimers.push(setTimeout(()=>{
+      document.getElementById('pdf-time-cover').innerHTML='<span style="color:'+renderTimeColor(coverS)+'">Rendered in '+coverS+'s</span>';
+      document.getElementById('pdf-dl-cover').className='pdf-dl-btn ready';
+    },1500));
+    pdfGenTimers.push(setTimeout(()=>{
+      document.getElementById('pdf-time-inside').innerHTML='<span style="color:'+renderTimeColor(insideS)+'">Rendered in '+insideS+'s</span>';
+      document.getElementById('pdf-dl-inside').className='pdf-dl-btn ready';
+      document.getElementById('pdf-dot').className='pdf-dot ready';
+      document.getElementById('pdf-status-lbl').textContent='Ready to download';
+      document.getElementById('pdf-regen-btn').style.opacity='1';
+      document.getElementById('pdf-regen-btn').style.pointerEvents='auto';
+      if(isMainBtn) setPdfBtnState('ready');
+    },2600));
+  }
 }
 function closePdfPopover(){
   pdfPopOpen=false;
@@ -2334,7 +2400,10 @@ function closePdfPopover(){
 function regenPdf(){
   const pop=document.getElementById('pdf-pop');
   const btn=pop._triggerBtn;
-  if(btn)openPdfPopover({stopPropagation:()=>{}},btn);
+  if(!btn)return;
+  // Reset state so regeneration runs fresh
+  if(btn.id==='btn-pdf-last') setPdfBtnState('idle');
+  openPdfPopover({stopPropagation:()=>{}},btn);
 }
 document.addEventListener('click',e=>{
   if(pdfPopOpen&&!document.getElementById('pdf-pop').contains(e.target))closePdfPopover();
